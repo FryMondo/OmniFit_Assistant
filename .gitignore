@@ -10,7 +10,7 @@ npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 
-# Build (Бекенд та Фронтенд)
+# Build (Backend and Frontend)
 dist/
 build/
 /out-tsc
