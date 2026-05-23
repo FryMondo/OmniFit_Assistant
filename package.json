@@ -1,0 +1,16 @@
+{
+  "name": "OmniFit_Assistant",
+  "version": "1.0.0",
+  "description": "",
+  "main": "dist/index.js",
+  "scripts": {
+    "build": "tsc",
+    "backend": "cd backend && npx ts-node src/server.ts",
+    "frontend": "npm --prefix frontend run dev"
+  },
+  "dependencies": {},
+  "devDependencies": {
+    "typescript": "^5.5.3"
+  },
+  "private": true
+}
