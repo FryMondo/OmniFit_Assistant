@@ -1,7 +1,7 @@
 import dotenv from 'dotenv';
 import express from 'express';
 import cors from 'cors';
-import {parseNutritionInput} from './services/nutrition.service';
+import {calculateCaloriesFromText} from './services/nutrition.service';
 import {parseFitnessVoiceInput, generateWorkoutPlan} from './services/fitness.service';
 
 dotenv.config();
@@ -17,7 +17,7 @@ app.post('/api/nutrition', async (req, res) => {
         const {text} = req.body;
         if (!text) return res.status(400).json({error: 'Text is required'});
 
-        const result = await parseNutritionInput(text);
+        const result = await calculateCaloriesFromText(text);
         res.json(result);
     } catch (error) {
         res.status(500).json({error: 'Internal server error'});
