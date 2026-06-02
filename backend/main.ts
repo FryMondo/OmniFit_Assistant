@@ -1,8 +1,7 @@
-import {parseNutritionInput} from "./src/services/nutrition.service";
+import {parseNutritionInput, calculateCaloriesFromText} from "./src/services/nutrition.service";
 import {generateWorkoutPlan, FitnessInput, parseFitnessVoiceInput} from "./src/services/fitness.service";
 
-async function nutrition() {
-    const userInput = "MI BOMBO!!!";
+async function nutritionVoice(userInput: string) {
     const data = await parseNutritionInput(userInput);
 
     if (data[0]!.status === "success") {
@@ -13,7 +12,7 @@ async function nutrition() {
     }
 }
 
-async function fitness() {
+async function fitness(userInput: string) {
     // const beginnerGym: FitnessInput = {
     //     goal: "muscle_gain",
     //     experience_level: "advanced",
@@ -29,7 +28,6 @@ async function fitness() {
     // } else {
     //     console.log("Помилка при генерації плану.");
     // }
-    const userInput = "Я хочу набрати м'язову масу, тренуюся 4 рази на тиждень, в залі а травм немає";
     const extractedInput = await parseFitnessVoiceInput(userInput);
 
     if (!extractedInput) {
@@ -47,5 +45,14 @@ async function fitness() {
     }
 }
 
-// nutrition();
-fitness();
+async function caloriesOfNutritionInput(userInput: string) {
+    const finalData = await calculateCaloriesFromText(userInput);
+
+    console.log(JSON.stringify(finalData, null, 2));
+}
+
+// caloriesOfNutritionInput("100 грам хліба");
+
+// nutritionVoice("2 cinnamon rolls and 1 coffee");
+
+// fitness("Я хочу набрати м'язову масу, тренуюся 4 рази на тиждень в залі, а травм немає");
