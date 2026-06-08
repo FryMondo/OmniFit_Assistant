@@ -1,8 +1,19 @@
 import dotenv from 'dotenv';
 import express from 'express';
 import cors from 'cors';
-import {calculateCaloriesFromText} from './services/nutrition.service';
-import {parseFitnessVoiceInput, generateWorkoutPlan} from './services/fitness.service';
+
+import profileRoutes from "./routes/profile.routes";
+import nutritionRoutes from "./routes/nutrition.routes";
+import workoutRoutes from "./routes/workout.routes";
+import metricRoutes from "./routes/athlete_metrics.routes";
+import gymRoutes from "./routes/gyms.routes";
+import equipmentRoutes from "./routes/gym_equipment.routes";
+import relationRoutes from "./routes/coach_athlete.routes";
+import membershipRoutes from "./routes/gym_membership.routes";
+import customMealRoutes from "./routes/custom_meals.routes";
+import exerciseLogRotes from "./routes/exercise_logs.routes";
+import authRoutes from "./routes/auth.routes";
+import gymReviewsRoutes from "./routes/gym_reviews.routes";
 
 dotenv.config();
 
@@ -12,48 +23,19 @@ const PORT = 5000;
 app.use(cors());
 app.use(express.json());
 
-app.post('/api/nutrition', async (req, res) => {
-    try {
-        const {text} = req.body;
-        if (!text) return res.status(400).json({error: 'Text is required'});
+app.use('/api/auth', authRoutes);
+app.use('/api/profiles', profileRoutes);
+app.use('/api/nutrition', nutritionRoutes);
+app.use('/api/gym-reviews', gymReviewsRoutes);
+app.use('/api/workouts', workoutRoutes);
+app.use('/api/metrics', metricRoutes);
+app.use('/api/gyms', gymRoutes);
+app.use('/api/equipment', equipmentRoutes);
+app.use('/api/relations', relationRoutes);
+app.use('/api/memberships', membershipRoutes);
+app.use('/api/custom-meals', customMealRoutes);
+app.use('/api/exercise-logs', exerciseLogRotes);
 
-        const result = await calculateCaloriesFromText(text);
-        res.json(result);
-    } catch (error) {
-        res.status(500).json({error: 'Internal server error'});
-    }
-});
-
-app.post('/api/workout', async (req, res) => {
-    try {
-        const {text} = req.body;
-        if (!text) return res.status(400).json({error: 'Text is required'});
-
-        const extractedInput = await parseFitnessVoiceInput(text);
-
-        if (!extractedInput) {
-            return res.status(500).json({error: 'Failed to parse voice input'});
-        }
-
-        const finalPlan = await generateWorkoutPlan(extractedInput);
-        res.json(finalPlan);
-    } catch (error: any) {
-        if (error.message === "INVALID_FITNESS_QUERY") {
-            return res.status(400).json({
-                error: "INVALID_FITNESS_QUERY",
-                message: "Запит не зрозумілий. Будь ласка, скажіть, що ви хочете отримати програму тренувань, вкажіть вашу ціль, досвід та наявність травм."
-            })
-        }
-
-        if (error.message === "MISSING_INJURY_INFO") {
-            return res.status(400).json({
-                error: "MISSING_INJURY_INFO",
-                message: "Безпека понад усе! Будь ласка, вкажіть, чи є у вас травми (наприклад, скажіть: 'в мене болить коліно' або 'травм немає')."
-            });
-        }
-        res.status(500).json({error: 'Internal server error'});
-    }
-});
 app.listen(PORT, () => {
-    console.log(`Cервер запущено на http://localhost:${PORT}`);
+    console.log(`Сервер запущено на http://localhost:${PORT}`);
 });
