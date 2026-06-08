@@ -1,0 +1,566 @@
+.plan-page {
+    width: 100vw;
+    min-height: 100vh;
+    overflow-y: auto;
+    overflow-x: hidden;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.plan-content {
+    width: 100%;
+    max-width: 800px;
+    padding: 20px 0;
+    display: flex;
+    flex-direction: column;
+    gap: 25px;
+}
+
+.plan-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0 20px;
+    max-width: 600px;
+    margin: 0 auto;
+    width: 100%;
+}
+
+.plan-header h1 {
+    font-size: 20px;
+    font-weight: 500;
+    color: #fff;
+    text-align: center;
+}
+
+.back-btn {
+    background: none;
+    border: none;
+    color: #aaa;
+    font-size: 16px;
+    cursor: pointer;
+    transition: color 0.3s ease;
+}
+
+.back-btn:hover {
+    color: #fff;
+}
+
+.header-spacer {
+    width: 60px;
+}
+
+.program-summary {
+    padding: 0 20px;
+    text-align: center;
+}
+
+.program-title {
+    color: #e74c3c;
+    font-size: 26px;
+    font-weight: bold;
+    margin-bottom: 5px;
+    text-shadow: 0 0 15px rgba(231, 76, 60, 0.2);
+}
+
+.program-details {
+    color: #888;
+    font-size: 14px;
+}
+
+.carousel-container {
+    position: relative;
+    width: 100%;
+    display: flex;
+    align-items: center;
+}
+
+.carousel-arrow {
+    display: none;
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    background: rgba(20, 20, 20, 0.8);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    color: #fff;
+    font-size: 24px;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    z-index: 10;
+    cursor: pointer;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+}
+
+.carousel-arrow:hover {
+    background: #e74c3c;
+    border-color: #e74c3c;
+}
+
+.left-arrow {
+    left: 10px;
+}
+
+.right-arrow {
+    right: 10px;
+}
+
+.days-carousel {
+    display: flex;
+    gap: 20px;
+    padding: 10px 20px 30px 20px;
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    scrollbar-width: none;
+    width: 100%;
+    cursor: grab;
+}
+
+.days-carousel:active {
+    cursor: grabbing;
+}
+
+.days-carousel::-webkit-scrollbar {
+    display: none;
+}
+
+.day-card {
+    min-width: 85vw;
+    max-width: 320px;
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    border-radius: 20px;
+    padding: 25px 20px;
+    display: flex;
+    flex-direction: column;
+    scroll-snap-align: center;
+    border-top: 4px solid #e74c3c;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+    user-select: none;
+}
+
+.rest-day-card {
+    border-top-color: #3498db;
+    background: rgba(52, 152, 219, 0.02);
+}
+
+.day-card-header {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    margin-bottom: 20px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    padding-bottom: 15px;
+}
+
+.day-number {
+    color: #aaa;
+    font-size: 13px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.day-focus {
+    color: #fff;
+    font-size: 20px;
+    font-weight: bold;
+}
+
+.compact-exercises-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.compact-exercise-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: #1a1a1a;
+    padding: 15px;
+    border-radius: 12px;
+}
+
+.ex-main-info {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.ex-name {
+    color: #fff;
+    font-size: 14px;
+    font-weight: 500;
+}
+
+.ex-sets-reps {
+    color: #888;
+    font-size: 12px;
+}
+
+.ex-rest-info {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    color: #e74c3c;
+    font-size: 12px;
+    font-weight: bold;
+    background: rgba(231, 76, 60, 0.1);
+    padding: 5px 8px;
+    border-radius: 8px;
+    white-space: nowrap;
+}
+
+.rest-day-content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    flex: 1;
+    gap: 15px;
+    color: #888;
+    text-align: center;
+    padding: 30px 0;
+}
+
+.rest-icon {
+    font-size: 48px;
+    opacity: 0.8;
+}
+
+@media (min-width: 768px) {
+    .carousel-arrow {
+        display: flex;
+    }
+
+    .days-carousel {
+        padding: 10px 60px 30px 60px;
+        scroll-snap-type: none;
+    }
+
+    .day-card {
+        min-width: calc(100% - 60px);
+        max-width: none;
+        scroll-snap-align: none;
+    }
+
+    .compact-exercises-list {
+        max-height: 400px;
+        overflow-y: auto;
+        padding-right: 5px;
+    }
+
+    .compact-exercises-list::-webkit-scrollbar {
+        width: 6px;
+    }
+
+    .compact-exercises-list::-webkit-scrollbar-track {
+        background: rgba(255, 255, 255, 0.02);
+        border-radius: 10px;
+    }
+
+    .compact-exercises-list::-webkit-scrollbar-thumb {
+        background: rgba(255, 255, 255, 0.1);
+        border-radius: 10px;
+    }
+
+    .compact-exercises-list::-webkit-scrollbar-thumb:hover {
+        background: rgba(231, 76, 60, 0.5);
+    }
+}
+
+.edit-plan-btn {
+    background: transparent;
+    border: 1px solid #3498db;
+    color: #3498db;
+    padding: 6px 14px;
+    border-radius: 8px;
+    font-size: 14px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.edit-plan-btn:hover {
+    background: rgba(52, 152, 219, 0.1);
+}
+
+.save-plan-btn {
+    background: #2ecc71;
+    border: none;
+    color: #fff;
+    padding: 6px 14px;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: background 0.2s ease;
+}
+
+.save-plan-btn:hover {
+    background: #27ae60;
+}
+
+.edit-program-title {
+    background: transparent;
+    border: none;
+    border-bottom: 2px dashed #e74c3c;
+    color: #e74c3c;
+    font-size: 26px;
+    font-weight: bold;
+    text-align: center;
+    width: 100%;
+    outline: none;
+    margin-bottom: 5px;
+    padding-bottom: 4px;
+}
+
+.edit-day-focus {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    color: #fff;
+    font-size: 18px;
+    font-weight: bold;
+    width: 100%;
+    padding: 4px 8px;
+    border-radius: 6px;
+    outline: none;
+}
+
+.edit-day-focus:focus {
+    border-color: #3498db;
+}
+
+.days-carousel.editing-mode {
+    cursor: default;
+    scroll-snap-type: none;
+}
+
+.days-carousel.editing-mode .day-card {
+    user-select: auto;
+}
+
+.delete-ex-btn {
+    background: rgba(231, 76, 60, 0.1);
+    border: 1px solid rgba(231, 76, 60, 0.3);
+    color: #e74c3c;
+    width: 28px;
+    height: 28px;
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    margin-left: 8px;
+    transition: all 0.2s ease;
+}
+
+.delete-ex-btn:hover {
+    background: #e74c3c;
+    color: #fff;
+}
+
+.add-exercise-btn {
+    background: transparent;
+    border: 1px dashed rgba(255, 255, 255, 0.3);
+    color: #aaa;
+    padding: 12px;
+    border-radius: 12px;
+    width: 100%;
+    cursor: pointer;
+    font-size: 14px;
+    transition: all 0.2s ease;
+    margin-top: 5px;
+}
+
+.add-exercise-btn:hover {
+    border-color: #fff;
+    color: #fff;
+}
+
+.make-workout-btn {
+    background: rgba(52, 152, 219, 0.1);
+    border: 1px solid #3498db;
+    color: #3498db;
+    padding: 8px 16px;
+    border-radius: 8px;
+    font-size: 13px;
+    cursor: pointer;
+    margin-top: 10px;
+}
+
+.day-header-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 5px;
+}
+
+.delete-day-btn {
+    background: rgba(231, 76, 60, 0.1);
+    color: #e74c3c;
+    border: 1px solid rgba(231, 76, 60, 0.3);
+    width: 24px;
+    height: 24px;
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.delete-day-btn:hover {
+    background: #e74c3c;
+    color: #fff;
+}
+
+.toggle-day-btn {
+    background: rgba(52, 152, 219, 0.15);
+    border: 1px solid #3498db;
+    color: #3498db;
+    padding: 8px 16px;
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    margin-top: 15px;
+    transition: all 0.2s ease;
+}
+
+.toggle-day-btn:hover {
+    background: #3498db;
+    color: #fff;
+}
+
+.toggle-day-btn.subtle {
+    background: transparent;
+    border: 1px dashed rgba(255, 255, 255, 0.2);
+    color: #aaa;
+    width: 100%;
+    margin-top: 5px;
+}
+
+.toggle-day-btn.subtle:hover {
+    border-color: #3498db;
+    color: #3498db;
+}
+
+.inline-add-ex-form {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    background: rgba(0, 0, 0, 0.2);
+    padding: 12px;
+    border-radius: 12px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    margin-top: 5px;
+    animation: slideDown 0.2s ease;
+}
+
+@keyframes slideDown {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.inline-add-ex-form input {
+    background: #1a1a1a;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    color: #fff;
+    padding: 10px;
+    border-radius: 8px;
+    font-size: 13px;
+    outline: none;
+}
+
+.inline-add-ex-form input:focus {
+    border-color: #e74c3c;
+}
+
+.ex-input-full {
+    width: 100%;
+}
+
+.ex-input-row {
+    display: flex;
+    gap: 6px;
+}
+
+.ex-input-row input {
+    flex: 1;
+    min-width: 0;
+}
+
+.ex-form-actions {
+    display: flex;
+    gap: 8px;
+    margin-top: 4px;
+}
+
+.ex-save-btn {
+    flex: 1;
+    background: #e74c3c;
+    color: #fff;
+    border: none;
+    padding: 8px;
+    border-radius: 8px;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+.ex-cancel-btn {
+    flex: 1;
+    background: transparent;
+    color: #aaa;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    padding: 8px;
+    border-radius: 8px;
+    cursor: pointer;
+}
+
+.day-actions-footer {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+
+.add-day-card {
+    border: 2px dashed rgba(255, 255, 255, 0.2);
+    background: transparent;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.add-day-card:hover {
+    border-color: #3498db;
+    background: rgba(52, 152, 219, 0.05);
+}
+
+.add-day-content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+    color: #aaa;
+}
+
+.add-day-card:hover .add-day-content {
+    color: #3498db;
+}
+
+.add-day-icon {
+    font-size: 40px;
+    line-height: 1;
+}
