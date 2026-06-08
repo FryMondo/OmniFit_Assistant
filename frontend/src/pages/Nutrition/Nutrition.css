@@ -1,0 +1,376 @@
+.nutrition-page {
+    width: 100vw;
+    height: 100vh;
+    overflow-y: auto;
+    overflow-x: hidden;
+    position: relative;
+    display: flex;
+    justify-content: center;
+}
+
+.nutrition-content {
+    width: 100%;
+    max-width: 600px;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 30px;
+}
+
+.nutri-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 10px;
+}
+
+.nutri-header h1 {
+    font-size: 18px;
+    font-weight: 500;
+    color: #fff;
+}
+
+.icon-btn, .back-btn {
+    background: none;
+    border: none;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.icon-btn img {
+    filter: invert(1);
+    width: 28px;
+}
+
+.back-btn {
+    font-size: 32px;
+    color: #fff;
+    opacity: 0.5;
+}
+
+.macros-section {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 30px;
+    background: rgba(255, 255, 255, 0.03);
+    padding: 30px 20px;
+    border-radius: 20px;
+    box-shadow: inset 0 0 20px rgba(255, 255, 255, 0.02);
+}
+
+.calories-circle-wrapper {
+    position: relative;
+    width: 180px;
+    height: 180px;
+}
+
+.calories-circle {
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 0 20px rgba(39, 174, 96, 0.2);
+}
+
+.circle-inner {
+    width: 160px;
+    height: 160px;
+    background-color: #1a1a1a;
+    border-radius: 50%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+
+.cal-current {
+    font-size: 36px;
+    font-weight: bold;
+    color: #fff;
+}
+
+.cal-target {
+    font-size: 14px;
+    color: #888;
+}
+
+.macro-bars {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.macro-item {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.macro-labels {
+    display: flex;
+    justify-content: space-between;
+    font-size: 14px;
+    color: #ddd;
+}
+
+.progress-track {
+    width: 100%;
+    height: 8px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 10px;
+    overflow: hidden;
+}
+
+.progress-fill {
+    height: 100%;
+    border-radius: 10px;
+    transition: width 1s ease-in-out;
+}
+
+.protein-fill {
+    background: #3498db;
+}
+
+.fat-fill {
+    background: #f1c40f;
+}
+
+.carbs-fill {
+    background: #e67e22;
+}
+
+.input-section {
+    display: flex;
+    justify-content: center;
+}
+
+.input-capsule {
+    display: flex;
+    align-items: center;
+    width: 100%;
+    max-width: 500px;
+    background: #ffffff;
+    border: 4px solid #1a1a1a;
+    border-radius: 50px;
+    padding: 5px 10px 5px 25px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+}
+
+.capsule-input {
+    flex: 1;
+    border: none;
+    background: transparent;
+    font-size: 16px;
+    color: #1a1a1a;
+    outline: none;
+}
+
+.capsule-input::placeholder {
+    color: #888;
+}
+
+.capsule-mic-btn {
+    background: none;
+    border: none;
+    width: 45px;
+    height: 45px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: background 0.3s ease, transform 0.2s ease;
+}
+
+.capsule-mic-btn:hover {
+    background: rgba(39, 174, 96, 0.1);
+    transform: scale(1.05);
+}
+
+.capsule-mic-btn img {
+    width: 24px;
+}
+
+.history-section h2 {
+    font-size: 18px;
+    margin-bottom: 15px;
+    color: #fff;
+}
+
+.meal-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.meal-card {
+    background: rgba(255, 255, 255, 0.05);
+    padding: 16px 20px;
+    border-radius: 12px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-left: 4px solid #27ae60;
+}
+
+.meal-name {
+    color: #fff;
+    font-size: 15px;
+}
+
+.meal-cal {
+    color: #27ae60;
+    font-weight: bold;
+}
+
+.sidebar-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: rgba(0, 0, 0, 0.5);
+    backdrop-filter: blur(3px);
+    z-index: 99;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.3s ease;
+}
+
+.sidebar-overlay.active {
+    opacity: 1;
+    pointer-events: auto;
+}
+
+.sidebar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 280px;
+    height: 100vh;
+    background: #111;
+    z-index: 100;
+    transform: translateX(-100%);
+    transition: transform 0.4s cubic-bezier(0.25, 1, 0.5, 1);
+    display: flex;
+    flex-direction: column;
+    box-shadow: 5px 0 25px rgba(0, 0, 0, 0.5);
+}
+
+.sidebar.open {
+    transform: translateX(0);
+}
+
+.sidebar-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 25px 20px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.sidebar-header h2 {
+    color: #fff;
+    font-size: 20px;
+}
+
+.close-btn {
+    background: none;
+    border: none;
+    color: #fff;
+    font-size: 24px;
+    cursor: pointer;
+}
+
+.sidebar-nav ul {
+    list-style: none;
+    padding: 20px 0;
+}
+
+.sidebar-nav li button {
+    width: 100%;
+    background: none;
+    border: none;
+    color: #ddd;
+    text-align: left;
+    padding: 15px 25px;
+    font-size: 16px;
+    cursor: pointer;
+    transition: background 0.2s, color 0.2s;
+}
+
+.sidebar-nav li button:hover {
+    background: rgba(39, 174, 96, 0.1);
+    color: #27ae60;
+}
+
+.sidebar-divider {
+    border: none;
+    height: 1px;
+    background: rgba(255, 255, 255, 0.05);
+    margin: 10px 0;
+}
+
+.logout-btn {
+    color: #e74c3c !important;
+}
+
+.logout-btn:hover {
+    background: rgba(231, 76, 60, 0.1) !important;
+}
+
+.date-navigation {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.date-arrow {
+    background: none;
+    border: none;
+    color: #fff;
+    font-size: 24px;
+    cursor: pointer;
+    opacity: 0.7;
+}
+
+.date-arrow:hover {
+    opacity: 1;
+}
+
+.input-capsule.recording-active {
+    border-color: #27ae60;
+    box-shadow: 0 10px 30px rgba(39, 174, 96, 0.3);
+}
+
+.input-capsule.recording-active .capsule-input::placeholder {
+    color: #27ae60;
+    font-weight: 500;
+}
+
+.capsule-mic-btn.recording {
+    background: rgba(39, 174, 96, 0.2);
+    animation: pulse-mic 1.5s infinite;
+}
+
+.capsule-mic-btn.recording img {
+    filter: invert(48%) sepia(79%) saturate(2476%) hue-rotate(86deg) brightness(118%) contrast(119%);
+}
+
+@keyframes pulse-mic {
+    0% {
+        box-shadow: 0 0 0 0 rgba(39, 174, 96, 0.7);
+    }
+    70% {
+        box-shadow: 0 0 0 15px rgba(39, 174, 96, 0);
+    }
+    100% {
+        box-shadow: 0 0 0 0 rgba(39, 174, 96, 0);
+    }
+}
