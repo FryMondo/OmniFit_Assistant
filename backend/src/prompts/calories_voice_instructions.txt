@@ -29,9 +29,23 @@ COOKING COEFFICIENTS (ONLY if "raw/dry" is explicitly mentioned):
   2. For standard Western soups, always use the format "[Ingredient] soup" (e.g., "mushroom soup", "chicken soup"). NEVER use "soup with...".
   3. For filled dough dishes (dumplings, pierogi, ravioli), always use the format "[Dish] with [Filling]" (e.g., "dumplings with cottage cheese", "pierogi with potato").
 
-JSON STRUCTURE:
-- status: "success" or "error".
-- product: English name + state (e.g., "boiled rice").
-- amount: Numeric value (final weight in grams).
-- unit: "grams" or "ml".
-- note: Brief explanation of the logic applied (in English).
+INTENT RULES:
+1. If the user says phrases like "я хочу створити страву", "нова страва", "збережи рецепт", set "intent" to "create_custom_meal".
+2. If "intent" is "create_custom_meal", extract the name of the meal and put it in "meal_name" (e.g., "Мої ранкові бутерброди"). If no name is provided, generate a short logical name based on ingredients.
+3. For all regular inputs (e.g., "я з'їв 100 грам курки"), set "intent" to "log_meal" and "meal_name" to null.
+
+IMPORTANT RESPONSE FORMAT:
+You must ALWAYS return a valid JSON object with the following structure:
+{
+  "intent": "log_meal" | "create_custom_meal",
+  "meal_name": "string or null",
+  "items": [
+    {
+      "product": "english name of the product",
+      "amount": number,
+      "unit": "g" or "ml",
+      "status": "success" | "error",
+      "note": "error explanation if status is error"
+    }
+  ]
+}
