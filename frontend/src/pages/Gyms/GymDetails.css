@@ -1,0 +1,313 @@
+.gym-details-page {
+    width: 100vw;
+    min-height: 100vh;
+    overflow-y: auto;
+    overflow-x: hidden;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    color-scheme: dark;
+    padding-bottom: 40px;
+}
+
+.gym-details-content {
+    width: 100%;
+    max-width: 600px;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 30px;
+}
+
+.loading-screen, .error-screen {
+    width: 100vw;
+    height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #aaa;
+    font-size: 18px;
+    background-color: #121212;
+}
+
+.gym-details-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 10px;
+}
+
+.gym-details-header h1 {
+    font-size: 20px;
+    font-weight: 500;
+    color: #fff;
+}
+
+.gym-hero-section {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    padding-bottom: 20px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.gym-title-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.gym-full-name {
+    color: #fff;
+    font-size: 28px;
+    font-weight: bold;
+}
+
+.gym-location-info {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.status-banner {
+    margin-top: 5px;
+    padding: 10px 15px;
+    border-radius: 10px;
+    font-size: 14px;
+    font-weight: bold;
+    text-align: center;
+}
+
+.status-banner.open {
+    background: rgba(39, 174, 96, 0.1);
+    color: #27ae60;
+    border: 1px solid rgba(39, 174, 96, 0.2);
+}
+
+.status-banner.closed {
+    background: rgba(231, 76, 60, 0.1);
+    color: #e74c3c;
+    border: 1px solid rgba(231, 76, 60, 0.2);
+}
+
+.info-block {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.info-block h3 {
+    color: #fff;
+    font-size: 18px;
+    font-weight: 500;
+    border-left: 4px solid #e74c3c;
+    padding-left: 10px;
+}
+
+.full-description {
+    color: #aaa;
+    font-size: 15px;
+    line-height: 1.6;
+    background: rgba(255, 255, 255, 0.02);
+    padding: 20px;
+    border-radius: 16px;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.equipment-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+.equipment-tag {
+    background: #1a1a1a;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    color: #ddd;
+    padding: 10px 15px;
+    border-radius: 12px;
+    font-size: 14px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.trainers-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.trainer-card {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    padding: 15px;
+    border-radius: 16px;
+}
+
+.trainer-avatar {
+    width: 45px;
+    height: 45px;
+    background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 20px;
+    font-weight: bold;
+    color: #fff;
+}
+
+.trainer-info {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.trainer-name {
+    color: #fff;
+    font-size: 16px;
+    font-weight: 500;
+}
+
+.trainer-spec {
+    color: #888;
+    font-size: 13px;
+}
+
+.schedule-card {
+    background: rgba(255, 255, 255, 0.02);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    border-radius: 12px;
+    padding: 15px;
+    margin-top: 5px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.schedule-row {
+    display: flex;
+    justify-content: space-between;
+    font-size: 14px;
+    padding: 4px 0;
+    color: #aaa;
+    border-bottom: 1px dashed rgba(255, 255, 255, 0.05);
+}
+
+.schedule-row:last-child {
+    border-bottom: none;
+}
+
+.schedule-row.is-today {
+    color: #fff;
+    font-weight: bold;
+}
+
+.day-hours {
+    font-variant-numeric: tabular-nums;
+}
+
+.closed-text {
+    color: #e74c3c;
+    font-style: italic;
+}
+
+.rating-block {
+    background: rgba(255, 255, 255, 0.02);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    border-radius: 16px;
+    padding: 20px;
+    align-items: center;
+    text-align: center;
+}
+
+.rating-block h3 {
+    border-left: none;
+    padding-left: 0;
+    margin-bottom: 10px;
+    color: #aaa;
+}
+
+.stars-container {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+}
+
+.star-btn {
+    background: none;
+    border: none;
+    font-size: 40px;
+    color: rgba(255, 255, 255, 0.1);
+    cursor: pointer;
+    transition: color 0.2s ease, transform 0.2s ease;
+    padding: 0;
+    line-height: 1;
+}
+
+.star-btn.active,
+.star-btn:hover:not(.disabled) {
+    color: #f1c40f;
+    transform: scale(1.1);
+}
+
+.star-btn.disabled {
+    cursor: default;
+}
+
+.thank-you-text {
+    margin-top: 15px;
+    color: #27ae60;
+    font-weight: bold;
+    font-size: 14px;
+    animation: fadeIn 0.5s ease;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(-5px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.apply-section {
+    display: flex;
+    justify-content: center;
+    margin: 10px 0;
+}
+
+.apply-gym-btn {
+    width: 100%;
+    background: #27ae60;
+    color: #fff;
+    border: none;
+    padding: 16px;
+    border-radius: 12px;
+    font-size: 16px;
+    font-weight: bold;
+    cursor: pointer;
+    box-shadow: 0 4px 15px rgba(39, 174, 96, 0.2);
+    transition: all 0.3s ease;
+}
+
+.apply-gym-btn:hover:not(.disabled) {
+    background: #219653;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(39, 174, 96, 0.3);
+}
+
+.apply-gym-btn.disabled {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    color: #aaa;
+    cursor: default;
+    box-shadow: none;
+}

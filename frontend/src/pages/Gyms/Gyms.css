@@ -1,0 +1,319 @@
+.gyms-page {
+    width: 100vw;
+    min-height: 100vh;
+    overflow-y: auto;
+    overflow-x: hidden;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    color-scheme: dark;
+    padding-bottom: 40px;
+}
+
+.gyms-content {
+    width: 100%;
+    max-width: 600px;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 25px;
+}
+
+.gyms-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 10px;
+}
+
+.gyms-header h1 {
+    font-size: 20px;
+    font-weight: 500;
+    color: #fff;
+}
+
+.back-btn {
+    background: none;
+    border: none;
+    color: #aaa;
+    font-size: 16px;
+    cursor: pointer;
+    transition: color 0.3s ease;
+    padding: 10px 0;
+}
+
+.back-btn:hover {
+    color: #fff;
+}
+
+.header-spacer {
+    width: 60px;
+}
+
+.search-section {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.search-input-wrapper {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.search-icon {
+    position: absolute;
+    left: 15px;
+    font-size: 18px;
+    opacity: 0.5;
+}
+
+.search-input-wrapper input {
+    width: 100%;
+    background-color: #1a1a1a !important;
+    border: 1px solid rgba(255, 255, 255, 0.1) !important;
+    color: #ffffff !important;
+    padding: 14px 15px 14px 45px;
+    border-radius: 12px;
+    font-size: 16px;
+    outline: none;
+    transition: border-color 0.3s ease;
+}
+
+.search-input-wrapper input:focus {
+    border-color: #e74c3c !important;
+}
+
+.city-chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+.city-chip {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    color: #aaa;
+    padding: 8px 16px;
+    border-radius: 20px;
+    font-size: 13px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.city-chip:hover {
+    background: rgba(255, 255, 255, 0.1);
+    color: #fff;
+}
+
+.city-chip.active {
+    background: rgba(231, 76, 60, 0.15);
+    border-color: #e74c3c;
+    color: #e74c3c;
+    font-weight: 500;
+}
+
+.gyms-list {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.gym-card {
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    border-left: 4px solid #e74c3c;
+    border-radius: 16px;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    cursor: pointer;
+    transition: transform 0.2s ease, background 0.2s ease;
+}
+
+.gym-card:hover {
+    background: rgba(255, 255, 255, 0.05);
+    transform: translateY(-2px);
+}
+
+.gym-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+}
+
+.gym-name {
+    color: #fff;
+    font-size: 18px;
+    font-weight: bold;
+}
+
+.gym-rating {
+    background: rgba(241, 196, 15, 0.1);
+    color: #f1c40f;
+    padding: 4px 8px;
+    border-radius: 8px;
+    font-size: 12px;
+    font-weight: bold;
+}
+
+.gym-location {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.city-tag {
+    background: #1a1a1a;
+    color: #aaa;
+    font-size: 11px;
+    padding: 4px 8px;
+    border-radius: 6px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.address-text {
+    color: #888;
+    font-size: 14px;
+}
+
+.gym-description {
+    color: #aaa;
+    font-size: 14px;
+    line-height: 1.4;
+    display: -webkit-box;
+    -webkit-line-clamp: 1;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+.gym-card-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 5px;
+    padding-top: 15px;
+    border-top: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.status-badge {
+    font-size: 12px;
+    font-weight: bold;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.status-badge::before {
+    content: '';
+    display: inline-block;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+}
+
+.status-badge.open {
+    color: #27ae60;
+}
+
+.status-badge.open::before {
+    background-color: #27ae60;
+    box-shadow: 0 0 8px #27ae60;
+}
+
+.status-badge.closed {
+    color: #e74c3c;
+}
+
+.status-badge.closed::before {
+    background-color: #e74c3c;
+}
+
+.details-link {
+    color: #e74c3c;
+    font-size: 13px;
+    font-weight: 500;
+}
+
+.no-results {
+    text-align: center;
+    padding: 40px 0;
+    color: #888;
+}
+
+.reset-search-btn {
+    margin-top: 15px;
+    background: transparent;
+    border: 1px solid #e74c3c;
+    color: #e74c3c;
+    padding: 8px 16px;
+    border-radius: 8px;
+    cursor: pointer;
+}
+
+.pagination {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 8px;
+    margin-top: 10px;
+}
+
+.page-btn {
+    background: #1a1a1a;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    color: #aaa;
+    width: 36px;
+    height: 36px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    font-size: 14px;
+    transition: all 0.2s ease;
+}
+
+.page-btn:hover:not(:disabled) {
+    border-color: #e74c3c;
+    color: #fff;
+}
+
+.page-btn.active {
+    background: rgba(231, 76, 60, 0.2);
+    border-color: #e74c3c;
+    color: #e74c3c;
+    font-weight: bold;
+}
+
+.page-btn:disabled {
+    opacity: 0.3;
+    cursor: not-allowed;
+}
+
+.gym-location-container {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.gym-hours {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: #aaa;
+    font-size: 13px;
+    margin-left: 2px;
+}
+
+.hours-icon {
+    font-size: 14px;
+    opacity: 0.8;
+}
+
+.hours-text {
+    font-weight: 500;
+}
