@@ -8,9 +8,18 @@ dotenv.config();
 const nutritionSchema: ResponseSchema = {
     type: SchemaType.OBJECT,
     properties: {
+        intent: {
+            type: SchemaType.STRING,
+            description: "Намір користувача: 'log_meal' для звичайного запису їжі, або 'create_custom_meal' для створення нового рецепту/страви"
+        },
+        meal_name: {
+            type: SchemaType.STRING,
+            description: "Назва кастомної страви (наприклад, 'Бутерброди'), якщо intent = 'create_custom_meal'. Якщо назви немає, згенеруй коротку назву за інгредієнтами. Якщо intent = 'log_meal', поверни null",
+            nullable: true
+        },
         items: {
             type: SchemaType.ARRAY,
-            description: "Список знайдених продуктів",
+            description: "Список знайдених продуктів у тексті",
             items: {
                 type: SchemaType.OBJECT,
                 properties: {
@@ -20,7 +29,7 @@ const nutritionSchema: ResponseSchema = {
                     },
                     product: {
                         type: SchemaType.STRING,
-                        description: "Назва продукту",
+                        description: "Назва продукту англійською мовою",
                         nullable: true
                     },
                     amount: {
@@ -30,12 +39,12 @@ const nutritionSchema: ResponseSchema = {
                     },
                     unit: {
                         type: SchemaType.STRING,
-                        description: "Одиниці виміру",
+                        description: "Одиниці виміру (g або ml)",
                         nullable: true
                     },
                     note: {
                         type: SchemaType.STRING,
-                        description: "Примітка",
+                        description: "Примітка англійською мовою, обов'язкова у разі помилки",
                         nullable: true
                     }
                 },
@@ -43,7 +52,7 @@ const nutritionSchema: ResponseSchema = {
             }
         }
     },
-    required: ["items"]
+    required: ["intent", "meal_name", "items"]
 };
 
 const fitnessSchema: ResponseSchema = {
