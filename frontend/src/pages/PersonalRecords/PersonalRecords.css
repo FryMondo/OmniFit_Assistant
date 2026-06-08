@@ -1,0 +1,275 @@
+.records-page {
+    width: 100vw;
+    min-height: 100vh;
+    overflow-y: auto;
+    overflow-x: hidden;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding-bottom: 40px;
+    color-scheme: dark;
+}
+
+.records-content {
+    width: 100%;
+    max-width: 600px;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 25px;
+}
+
+.records-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 10px;
+}
+
+.records-header h1 {
+    font-size: 20px;
+    font-weight: 500;
+    color: #fff;
+}
+
+.back-btn {
+    background: none;
+    border: none;
+    color: #aaa;
+    font-size: 16px;
+    cursor: pointer;
+    transition: color 0.3s ease;
+    padding: 10px 0;
+}
+
+.back-btn:hover {
+    color: #fff;
+}
+
+.header-spacer {
+    width: 60px;
+}
+
+.add-record-btn {
+    background: transparent;
+    border: 2px dashed rgba(231, 76, 60, 0.3);
+    color: #e74c3c;
+    padding: 16px;
+    border-radius: 12px;
+    font-size: 16px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.add-record-btn:hover {
+    background: rgba(231, 76, 60, 0.05);
+    border-color: #e74c3c;
+}
+
+.records-list {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.record-card {
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    border-left: 4px solid #e74c3c;
+    border-radius: 16px;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    transition: transform 0.2s ease;
+}
+
+.record-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    padding-bottom: 15px;
+}
+
+.exercise-name {
+    color: #fff;
+    font-size: 18px;
+    font-weight: bold;
+}
+
+.action-buttons {
+    display: flex;
+    gap: 8px;
+}
+
+.icon-btn {
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.icon-btn img {
+    width: 16px;
+    filter: invert(0.8);
+}
+
+.edit-btn:hover {
+    border-color: #3498db;
+    background: rgba(52, 152, 219, 0.1);
+}
+
+.delete-btn:hover {
+    border-color: #e74c3c;
+    background: rgba(231, 76, 60, 0.1);
+}
+
+.record-stats {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.stat-block {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    flex: 1;
+}
+
+.stat-block:not(:last-child) {
+    border-right: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.stat-value {
+    color: #fff;
+    font-size: 22px;
+    font-weight: bold;
+}
+
+.stat-value small {
+    font-size: 12px;
+    color: #888;
+    font-weight: normal;
+}
+
+.date-value {
+    font-size: 16px;
+    color: #e74c3c;
+}
+
+.stat-label {
+    color: #888;
+    font-size: 12px;
+    margin-top: 4px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.record-form {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.record-form.create-mode {
+    background: rgba(231, 76, 60, 0.05);
+    border: 1px solid rgba(231, 76, 60, 0.2);
+    padding: 20px;
+    border-radius: 16px;
+    animation: slideDown 0.3s ease;
+}
+
+@keyframes slideDown {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.record-form h3 {
+    color: #fff;
+    font-size: 16px;
+    margin-bottom: 5px;
+}
+
+.stats-row {
+    display: flex;
+    gap: 10px;
+}
+
+.input-group {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    flex: 1;
+}
+
+.input-group label {
+    font-size: 12px;
+    color: #aaa;
+}
+
+.record-form input {
+    background-color: #1a1a1a !important;
+    border: 1px solid rgba(255, 255, 255, 0.1) !important;
+    color: #ffffff !important;
+    padding: 12px;
+    border-radius: 10px;
+    font-size: 14px;
+    outline: none;
+    width: 100%;
+}
+
+.record-form input:focus {
+    border-color: #e74c3c !important;
+}
+
+.record-form input:-webkit-autofill {
+    -webkit-box-shadow: 0 0 0 30px #1a1a1a inset !important;
+    -webkit-text-fill-color: #ffffff !important;
+    transition: background-color 5000s ease-in-out 0s;
+}
+
+.form-actions {
+    display: flex;
+    gap: 10px;
+    margin-top: 5px;
+}
+
+.save-btn {
+    flex: 1;
+    background: #e74c3c;
+    color: #fff;
+    border: none;
+    padding: 12px;
+    border-radius: 10px;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+.cancel-btn {
+    flex: 1;
+    background: transparent;
+    color: #aaa;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    padding: 12px;
+    border-radius: 10px;
+    cursor: pointer;
+}
+
+.cancel-btn:hover {
+    color: #fff;
+    border-color: #fff;
+}
