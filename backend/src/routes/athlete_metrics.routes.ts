@@ -25,6 +25,10 @@ router.put('/:athleteId', async (req, res) => {
         const {athleteId} = req.params;
         const {activity, goal, ...metricsData} = req.body;
 
+        if (goal) {
+            (metricsData as any).goal = goal;
+        }
+
         if (
             activity &&
             goal &&

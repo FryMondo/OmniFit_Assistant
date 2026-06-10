@@ -39,9 +39,15 @@ export interface NutritionSummary {
     errors: string[];
 }
 
-export async function parseNutritionInput(text: string): Promise<GeminiNutritionResponse> {
+export async function parseNutritionInput(text: string, customMealNames: string[] = []): Promise<GeminiNutritionResponse> {
     try {
-        const result = await nutritionModel.generateContent(text);
+        let finalPrompt = text;
+        if (customMealNames.length > 0) {
+            const namesList = customMealNames.map(n => `"${n}"`).join(', ');
+            finalPrompt += `\n\nIMPORTANT CONTEXT: The user has the following saved custom meals: [${namesList}]. If the user input mentions any of these, DO NOT translate the name into English, extract it EXACTLY as it is written in the array, and MUST set status to 'success' (do not mark it as an error or too generic).`;
+        }
+
+        const result = await nutritionModel.generateContent(finalPrompt);
         const responseText = result.response.text();
 
         const parsedData = JSON.parse(responseText) as GeminiNutritionResponse;
@@ -68,8 +74,10 @@ export async function parseNutritionInput(text: string): Promise<GeminiNutrition
 }
 
 export async function calculateCaloriesFromText(userInput: string, athleteId: string): Promise<NutritionSummary> {
-    const parsedData = await parseNutritionInput(userInput);
     const customMeals = await getCustomMealsByAthleteId(athleteId);
+    const customMealNames = customMeals.map(m => m.name);
+
+    const parsedData = await parseNutritionInput(userInput, customMealNames);
 
     const result: NutritionSummary = {
         intent: parsedData.intent,
@@ -85,24 +93,45 @@ export async function calculateCaloriesFromText(userInput: string, athleteId: st
             continue;
         }
 
-        const queryProduct = item.product.toLowerCase();
-        const matchedCustomMeal = customMeals.find(m => m.name.toLowerCase() === queryProduct);
+        const queryProduct = item.product.toLowerCase().trim();
+        const matchedCustomMeal = customMeals.find(m => m.name.toLowerCase().trim() === queryProduct);
 
         if (matchedCustomMeal) {
+            let totalRecipeWeight = 0;
+            if (matchedCustomMeal.ingredients && Array.isArray(matchedCustomMeal.ingredients)) {
+                totalRecipeWeight = matchedCustomMeal.ingredients.reduce((sum: number, ing: any) => sum + (Number(ing.amount) || 0), 0);
+            }
+
+            if (totalRecipeWeight === 0) totalRecipeWeight = 1;
+
+            let multiplier = 1;
+            const inputAmount = Number(item.amount) || 1;
+
+            if (item.unit === 'g' || item.unit === 'г' || item.unit === 'ml') {
+                multiplier = inputAmount / totalRecipeWeight;
+            } else {
+                multiplier = inputAmount;
+            }
+
+            const calcCalories = Number((matchedCustomMeal.total_calories * multiplier).toFixed(1));
+            const calcProtein = Number((matchedCustomMeal.total_protein * multiplier).toFixed(1));
+            const calcFat = Number((matchedCustomMeal.total_fat * multiplier).toFixed(1));
+            const calcCarbs = Number((matchedCustomMeal.total_carbs * multiplier).toFixed(1));
+
             result.items.push({
                 original_name: matchedCustomMeal.name,
-                amount: 1,
-                unit: 'serving',
-                calories: matchedCustomMeal.total_calories,
-                protein_g: matchedCustomMeal.total_protein,
-                fat_g: matchedCustomMeal.total_fat,
-                carbs_g: matchedCustomMeal.total_carbs
+                amount: inputAmount,
+                unit: item.unit || 'serving',
+                calories: calcCalories,
+                protein_g: calcProtein,
+                fat_g: calcFat,
+                carbs_g: calcCarbs
             });
 
-            result.totals.calories += matchedCustomMeal.total_calories;
-            result.totals.protein_g += matchedCustomMeal.total_protein;
-            result.totals.fat_g += matchedCustomMeal.total_fat;
-            result.totals.carbs_g += matchedCustomMeal.total_carbs;
+            result.totals.calories += calcCalories;
+            result.totals.protein_g += calcProtein;
+            result.totals.fat_g += calcFat;
+            result.totals.carbs_g += calcCarbs;
 
             continue;
         }

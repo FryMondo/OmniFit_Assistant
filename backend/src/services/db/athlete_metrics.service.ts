@@ -9,6 +9,7 @@ export interface AthleteMetrics {
     height_cm: number | null;
     experience_level: string | null;
     injuries: string[] | null;
+    goal?: 'weight_loss' | 'muscle_gain' | 'strength' | 'endurance' | null;
     target_calories?: number | null;
     target_protein?: number | null;
     target_fat?: number | null;
