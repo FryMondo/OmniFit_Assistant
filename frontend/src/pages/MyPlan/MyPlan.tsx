@@ -91,6 +91,22 @@ const MyPlan: React.FC = () => {
         fetchPlan();
     }, [targetAthleteId, session, API_BASE_URL]);
 
+    const handleMoveDay = (index: number, direction: 'left' | 'right') => {
+        setWorkoutDays(prevDays => {
+            const newDays = [...prevDays];
+            if (direction === 'left' && index > 0) {
+                const temp = newDays[index - 1];
+                newDays[index - 1] = newDays[index];
+                newDays[index] = temp;
+            } else if (direction === 'right' && index < newDays.length - 1) {
+                const temp = newDays[index + 1];
+                newDays[index + 1] = newDays[index];
+                newDays[index] = temp;
+            }
+            return newDays.map((d, i) => ({...d, dayNumber: i + 1}));
+        });
+    };
+
     const handleDeleteExercise = (dayId: string, exerciseId: string) => {
         setWorkoutDays(prevDays => prevDays.map(day => {
             if (day.id === dayId) {
@@ -292,11 +308,49 @@ const MyPlan: React.FC = () => {
                         onMouseUp={handleMouseUp}
                         onMouseMove={handleMouseMove}
                     >
-                        {workoutDays.map((day) => (
+                        {workoutDays.map((day, index) => (
                             <div key={day.id} className={`day-card ${day.isRestDay ? 'rest-day-card' : ''}`}>
                                 <div className="day-card-header">
                                     <div className="day-header-top">
-                                        <span className="day-number">День {day.dayNumber}</span>
+                                        <div style={{display: 'flex', alignItems: 'center', gap: '8px'}}>
+                                            {isEditing && (
+                                                <button
+                                                    onClick={() => handleMoveDay(index, 'left')}
+                                                    disabled={index === 0}
+                                                    style={{
+                                                        background: 'none',
+                                                        border: 'none',
+                                                        color: index === 0 ? '#555' : '#27ae60',
+                                                        cursor: index === 0 ? 'default' : 'pointer',
+                                                        fontSize: '20px',
+                                                        padding: '0',
+                                                        display: 'flex'
+                                                    }}
+                                                    title="Перемістити вліво"
+                                                >
+                                                    ◀
+                                                </button>
+                                            )}
+                                            <span className="day-number">День {day.dayNumber}</span>
+                                            {isEditing && (
+                                                <button
+                                                    onClick={() => handleMoveDay(index, 'right')}
+                                                    disabled={index === workoutDays.length - 1}
+                                                    style={{
+                                                        background: 'none',
+                                                        border: 'none',
+                                                        color: index === workoutDays.length - 1 ? '#555' : '#27ae60',
+                                                        cursor: index === workoutDays.length - 1 ? 'default' : 'pointer',
+                                                        fontSize: '20px',
+                                                        padding: '0',
+                                                        display: 'flex'
+                                                    }}
+                                                    title="Перемістити вправо"
+                                                >
+                                                    ▶
+                                                </button>
+                                            )}
+                                        </div>
                                         {isEditing && (
                                             <button className="delete-day-btn"
                                                     onClick={() => handleDeleteDay(day.id)}>✕</button>

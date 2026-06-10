@@ -35,6 +35,7 @@ const ProgramGenerator: React.FC = () => {
                 if (metricsRes.ok) {
                     const metrics = await metricsRes.json();
                     if (metrics.experience_level) setExperience(metrics.experience_level);
+                    if (metrics.goal) setGoal(metrics.goal);
                     if (metrics.injuries && metrics.injuries.length > 0) {
                         setInjuries(metrics.injuries.join(', '));
                     }
@@ -134,6 +135,21 @@ const ProgramGenerator: React.FC = () => {
 
             const generatedPlan = await genRes.json();
 
+            try {
+                const existingRes = await fetch(`${API_BASE_URL}/workouts/athlete/${user.id}`, {headers});
+                if (existingRes.ok) {
+                    const existingWorkouts = await existingRes.json();
+                    await Promise.all(existingWorkouts.map((workout: any) =>
+                        fetch(`${API_BASE_URL}/workouts/${workout.id}`, {
+                            method: 'DELETE',
+                            headers
+                        })
+                    ));
+                }
+            } catch (deleteError) {
+                console.error("Помилка видалення старих планів:", deleteError);
+            }
+
             const saveRes = await fetch(`${API_BASE_URL}/workouts`, {
                 method: 'POST',
                 headers,
@@ -206,8 +222,8 @@ const ProgramGenerator: React.FC = () => {
                             <select value={goal} onChange={(e) => setGoal(e.target.value)} disabled={isGenerating}>
                                 <option value="weight_loss">Схуднення / Рельєф</option>
                                 <option value="muscle_gain">Набір м'язової маси</option>
-                                <option value="maintenance">Підтримка форми</option>
                                 <option value="strength">Розвиток сили</option>
+                                <option value="endurance">Розвиток витривалості</option>
                             </select>
                         </div>
                         <div className="input-group">

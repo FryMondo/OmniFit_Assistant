@@ -7,29 +7,18 @@ import menuIcon from '../../assets/menu-icon.png';
 
 interface WorkoutSet {
     id: string;
+    setIndex: number;
     reps: string | number;
     completed: boolean;
 }
 
 interface Exercise {
     id: string;
+    dbIndex: number;
     name: string;
     rest_seconds: number;
     sets: WorkoutSet[];
 }
-
-const defaultExercises: Exercise[] = [
-    {
-        id: 'ex1',
-        name: 'Жим гантелей лежачи',
-        rest_seconds: 90,
-        sets: [
-            {id: 'set1_1', reps: 12, completed: false},
-            {id: 'set1_2', reps: 10, completed: false},
-            {id: 'set1_3', reps: 8, completed: false},
-        ]
-    }
-];
 
 const Workouts: React.FC = () => {
     const {userId} = useParams<{ userId?: string }>();
@@ -44,28 +33,20 @@ const Workouts: React.FC = () => {
     const [restTimer, setRestTimer] = useState<number | null>(null);
     const [expandedExercises, setExpandedExercises] = useState<string[]>([]);
 
+    const [currentWorkoutId, setCurrentWorkoutId] = useState<string | null>(null);
+    const [fullWorkout, setFullWorkout] = useState<any>(null);
     const [programName, setProgramName] = useState('Немає активного плану');
-    const [dayFocus, setDayFocus] = useState('Сьогоднішнє тренування');
 
-    const [exercises, setExercises] = useState<Exercise[]>(defaultExercises);
+    const [currentDayIndex, setCurrentDayIndex] = useState(0);
 
-    const progressKey = targetAthleteId ? `workoutProgress_${targetAthleteId}` : 'workoutProgress_temp';
     const timerKey = targetAthleteId ? `workoutTimerEnd_${targetAthleteId}` : 'workoutTimerEnd_temp';
 
-    useEffect(() => {
-        if (!targetAthleteId) return;
-        const savedProgress = localStorage.getItem(progressKey);
-        if (savedProgress) {
-            setExercises(JSON.parse(savedProgress));
-        } else {
-            setExercises(defaultExercises);
-        }
-    }, [targetAthleteId, progressKey]);
-
-    useEffect(() => {
-        if (!targetAthleteId) return;
-        localStorage.setItem(progressKey, JSON.stringify(exercises));
-    }, [exercises, targetAthleteId, progressKey]);
+    const getMonday = (d: Date) => {
+        const date = new Date(d);
+        const day = date.getDay();
+        const diff = date.getDate() - day + (day === 0 ? -6 : 1);
+        return new Date(date.setDate(diff)).setHours(0, 0, 0, 0);
+    };
 
     useEffect(() => {
         if (!targetAthleteId || !session) return;
@@ -81,48 +62,42 @@ const Workouts: React.FC = () => {
 
                     if (workouts && workouts.length > 0) {
                         const latestPlan = workouts[workouts.length - 1];
+                        setCurrentWorkoutId(latestPlan.id);
                         setProgramName(latestPlan.plan_name || 'Мій план тренувань');
 
-                        const data = latestPlan.workout_data;
-                        let backendExercises: Exercise[] = [];
-                        let focus = 'Поточне тренування';
+                        let data = latestPlan.workout_data;
+                        let daysArray = Array.isArray(data) ? data : (data.days || [data]);
 
-                        let dayData = null;
-                        if (Array.isArray(data)) {
-                            dayData = data[0];
-                        } else if (data && data.days && Array.isArray(data.days)) {
-                            dayData = data.days[0];
-                        } else if (data && data.exercises) {
-                            dayData = data;
+                        const now = new Date();
+                        const lastReset = data.last_progress_reset ? new Date(data.last_progress_reset) : new Date(0);
+
+                        let needsReset = false;
+                        if (!data.last_progress_reset || getMonday(now) > getMonday(lastReset)) {
+                            needsReset = true;
                         }
 
-                        if (dayData && dayData.exercises && Array.isArray(dayData.exercises)) {
-                            focus = dayData.focus || dayData.day || focus;
-
-                            backendExercises = dayData.exercises.map((ex: any, i: number) => ({
-                                id: `backend_ex_${i}`,
-                                name: ex.exercise_name || ex.name || ex.exercise || 'Вправа',
-                                rest_seconds: parseInt(ex.rest_seconds) || 60,
-                                sets: Array.from({length: parseInt(ex.sets) || 3}).map((_, j) => ({
-                                    id: `set${i}_${j}`,
-                                    reps: ex.reps || 10,
-                                    completed: false
+                        if (needsReset && !isCoachView) {
+                            daysArray = daysArray.map((day: any) => ({
+                                ...day,
+                                exercises: (day.exercises || []).map((ex: any) => ({
+                                    ...ex,
+                                    completed_sets: []
                                 }))
                             }));
+                            data.last_progress_reset = now.toISOString();
+                            data.days = daysArray;
+
+                            fetch(`${API_BASE_URL}/workouts/${latestPlan.id}`, {
+                                method: 'PUT',
+                                headers: {
+                                    'Content-Type': 'application/json',
+                                    'Authorization': `Bearer ${session.access_token}`
+                                },
+                                body: JSON.stringify({plan_name: latestPlan.plan_name, workout_data: data})
+                            }).catch(e => console.error("Помилка автоскидання прогресу:", e));
                         }
 
-                        setDayFocus(focus);
-
-                        if (backendExercises.length > 0) {
-                            const savedStr = localStorage.getItem(progressKey);
-                            if (savedStr) {
-                                const savedEx = JSON.parse(savedStr);
-                                if (savedEx.length > 0 && savedEx[0].name === backendExercises[0].name) {
-                                    return;
-                                }
-                            }
-                            setExercises(backendExercises);
-                        }
+                        setFullWorkout(data);
                     }
                 }
             } catch (error) {
@@ -131,15 +106,7 @@ const Workouts: React.FC = () => {
         };
 
         fetchWorkout();
-    }, [targetAthleteId, session, API_BASE_URL, progressKey]);
-
-    const toggleSidebar = () => setIsSidebarOpen(!isSidebarOpen);
-    const closeSidebar = () => setIsSidebarOpen(false);
-
-    const handleLogout = async () => {
-        await logout();
-        navigate('/auth');
-    };
+    }, [targetAthleteId, session, API_BASE_URL, isCoachView]);
 
     useEffect(() => {
         if (!targetAthleteId) return;
@@ -185,30 +152,47 @@ const Workouts: React.FC = () => {
         localStorage.removeItem(timerKey);
     };
 
-    const toggleSetComplete = (exerciseId: string, setId: string) => {
-        setExercises(prevExercises =>
-            prevExercises.map(ex => {
-                if (ex.id === exerciseId) {
-                    return {
-                        ...ex,
-                        sets: ex.sets.map(set => {
-                            if (set.id === setId) {
-                                const newCompletedStatus = !set.completed;
-                                if (newCompletedStatus) {
-                                    const duration = ex.rest_seconds || 60;
-                                    const endTime = Date.now() + duration * 1000;
-                                    localStorage.setItem(timerKey, endTime.toString());
-                                    setRestTimer(duration);
-                                }
-                                return {...set, completed: newCompletedStatus};
-                            }
-                            return set;
-                        })
-                    };
-                }
-                return ex;
-            })
-        );
+    const toggleSetComplete = async (_exerciseId: string, _setId: string, dbIndex: number, setIndex: number) => {
+        if (isCoachView) return;
+
+        const newWorkout = {...fullWorkout};
+        const dayToUpdate = newWorkout.days ? newWorkout.days[currentDayIndex] : newWorkout[currentDayIndex];
+        const exToUpdate = dayToUpdate.exercises[dbIndex];
+
+        const numSets = parseInt(exToUpdate.sets) || 3;
+        if (!exToUpdate.completed_sets) {
+            exToUpdate.completed_sets = Array(numSets).fill(false);
+        }
+
+        const isCurrentlyCompleted = !!exToUpdate.completed_sets[setIndex];
+        exToUpdate.completed_sets[setIndex] = !isCurrentlyCompleted;
+
+        setFullWorkout(newWorkout);
+
+        if (!isCurrentlyCompleted) {
+            const duration = parseInt(exToUpdate.rest_seconds) || 60;
+            const endTime = Date.now() + duration * 1000;
+            localStorage.setItem(timerKey, endTime.toString());
+            setRestTimer(duration);
+        }
+
+        if (currentWorkoutId && session) {
+            try {
+                await fetch(`${API_BASE_URL}/workouts/${currentWorkoutId}`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${session.access_token}`
+                    },
+                    body: JSON.stringify({
+                        plan_name: programName,
+                        workout_data: newWorkout
+                    })
+                });
+            } catch (e) {
+                console.error('Помилка синхронізації прогресу з БД', e);
+            }
+        }
     };
 
     const toggleExpand = (exerciseId: string) => {
@@ -219,11 +203,41 @@ const Workouts: React.FC = () => {
         );
     };
 
+    const daysArray = fullWorkout?.days || (Array.isArray(fullWorkout) ? fullWorkout : []);
+    const currentDayData = daysArray[currentDayIndex];
+
+    const dayFocus = currentDayData?.focus || `День ${currentDayData?.day_number || currentDayIndex + 1}`;
+    const isRestDay = currentDayData?.is_rest_day === true || (!currentDayData?.exercises || currentDayData.exercises.length === 0);
+
+    const exercises: Exercise[] = (currentDayData?.exercises || []).map((ex: any, i: number) => {
+        const numSets = parseInt(ex.sets) || 3;
+        const completedSetsArr = ex.completed_sets || [];
+        return {
+            id: `backend_ex_${currentDayIndex}_${i}`,
+            dbIndex: i,
+            name: ex.exercise_name || ex.name || ex.exercise || 'Вправа',
+            rest_seconds: parseInt(ex.rest_seconds) || 60,
+            sets: Array.from({length: numSets}).map((_, j) => ({
+                id: `set_${currentDayIndex}_${i}_${j}`,
+                setIndex: j,
+                reps: ex.reps || 10,
+                completed: !!completedSetsArr[j]
+            }))
+        };
+    });
+
     const incompleteExercises = exercises.filter(ex => !ex.sets.every(s => s.completed));
     const completedExercises = exercises.filter(ex => ex.sets.every(s => s.completed));
     const sortedExercises = [...incompleteExercises, ...completedExercises];
 
     const todayStr = new Intl.DateTimeFormat('uk-UA', {day: 'numeric', month: 'long'}).format(new Date());
+
+    const toggleSidebar = () => setIsSidebarOpen(!isSidebarOpen);
+    const closeSidebar = () => setIsSidebarOpen(false);
+    const handleLogout = async () => {
+        await logout();
+        navigate('/auth');
+    };
 
     return (
         <div className="workouts-page">
@@ -258,11 +272,9 @@ const Workouts: React.FC = () => {
                             <li>
                                 <button onClick={() => navigate('/gyms')}>Спортзали</button>
                             </li>
-                            {user?.role === 'coach' && (
-                                <li>
-                                    <button onClick={() => navigate('/clients')}>Клієнти</button>
-                                </li>
-                            )}
+                            {user?.role === 'coach' && (<li>
+                                <button onClick={() => navigate('/clients')}>Клієнти</button>
+                            </li>)}
                             <hr className="sidebar-divider"/>
                             <li>
                                 <button className="logout-btn" onClick={handleLogout}>Вийти</button>
@@ -278,11 +290,7 @@ const Workouts: React.FC = () => {
                     <h1 style={{textTransform: 'capitalize'}}>{isCoachView ? 'Тренування клієнта' : `Сьогодні, ${todayStr}`}</h1>
                     {isCoachView ? (
                         <button className="back-btn" onClick={() => navigate(-1)} style={{
-                            background: 'none',
-                            border: 'none',
-                            color: '#aaa',
-                            cursor: 'pointer',
-                            fontSize: '16px'
+                            background: 'none', border: 'none', color: '#aaa', cursor: 'pointer', fontSize: '16px'
                         }}>‹ Назад</button>
                     ) : (
                         <button className="icon-btn" onClick={toggleSidebar}>
@@ -304,60 +312,79 @@ const Workouts: React.FC = () => {
                 <section className="program-status-section">
                     <p className="program-name">{programName}</p>
                     <div className="day-navigation">
-                        <button className="day-arrow" style={{visibility: isCoachView ? 'hidden' : 'visible'}}>‹
+                        <button
+                            className="day-arrow"
+                            onClick={() => setCurrentDayIndex(prev => Math.max(0, prev - 1))}
+                            style={{visibility: currentDayIndex === 0 ? 'hidden' : 'visible'}}
+                        >
+                            ‹
                         </button>
                         <h2 className="day-focus">{dayFocus}</h2>
-                        <button className="day-arrow" style={{visibility: isCoachView ? 'hidden' : 'visible'}}>›
+                        <button
+                            className="day-arrow"
+                            onClick={() => setCurrentDayIndex(prev => Math.min(daysArray.length - 1, prev + 1))}
+                            style={{visibility: (!daysArray || currentDayIndex >= daysArray.length - 1) ? 'hidden' : 'visible'}}
+                        >
+                            ›
                         </button>
                     </div>
                 </section>
 
                 <section className="exercises-section">
-                    {sortedExercises.map((exercise) => {
-                        const isFullyCompleted = exercise.sets.every(s => s.completed);
-                        const isExpanded = expandedExercises.includes(exercise.id);
-                        const isCollapsed = isFullyCompleted && !isExpanded;
+                    {isRestDay ? (
+                        <div className="rest-day-message"
+                             style={{textAlign: 'center', marginTop: '40px', color: '#aaa'}}>
+                            <h3 style={{color: '#fff', marginBottom: '10px', fontSize: '24px'}}>Вихідний день</h3>
+                            <p>Сьогодні час для відпочинку та відновлення м'язів.</p>
+                        </div>
+                    ) : (
+                        sortedExercises.map((exercise) => {
+                            const isFullyCompleted = exercise.sets.every(s => s.completed);
+                            const isExpanded = expandedExercises.includes(exercise.id);
+                            const isCollapsed = isFullyCompleted && !isExpanded;
 
-                        return (
-                            <div key={exercise.id}
-                                 className={`exercise-card ${isFullyCompleted ? 'fully-completed' : ''}`}>
-                                <div
-                                    className="exercise-header"
-                                    onClick={() => isFullyCompleted && toggleExpand(exercise.id)}
-                                >
-                                    <h3 className="exercise-title">{exercise.name}</h3>
-                                    {isFullyCompleted && (
-                                        <span className="expand-indicator">{isExpanded ? '▲' : '▼'}</span>
+                            return (
+                                <div key={exercise.id}
+                                     className={`exercise-card ${isFullyCompleted ? 'fully-completed' : ''}`}>
+                                    <div
+                                        className="exercise-header"
+                                        onClick={() => isFullyCompleted && toggleExpand(exercise.id)}
+                                    >
+                                        <h3 className="exercise-title">{exercise.name}</h3>
+                                        {isFullyCompleted && (
+                                            <span className="expand-indicator">{isExpanded ? '▲' : '▼'}</span>
+                                        )}
+                                    </div>
+
+                                    {!isCollapsed && (
+                                        <div className="sets-list">
+                                            {exercise.sets.map((set) => {
+                                                const isDisabled = (restTimer !== null && restTimer > 0) || isCoachView;
+
+                                                return (
+                                                    <div key={set.id}
+                                                         className={`set-row ${set.completed ? 'completed' : ''} ${isDisabled ? 'disabled' : ''}`}>
+                                                        <div className="set-info">
+                                                            <span
+                                                                className="set-number">Підхід {set.setIndex + 1}</span>
+                                                            <span className="set-target">{set.reps} повторень</span>
+                                                        </div>
+                                                        <button
+                                                            className={`check-btn ${set.completed ? 'checked' : ''}`}
+                                                            onClick={() => !isDisabled && toggleSetComplete(exercise.id, set.id, exercise.dbIndex, set.setIndex)}
+                                                            disabled={isDisabled}
+                                                        >
+                                                            {set.completed ? '✓' : ''}
+                                                        </button>
+                                                    </div>
+                                                );
+                                            })}
+                                        </div>
                                     )}
                                 </div>
-
-                                {!isCollapsed && (
-                                    <div className="sets-list">
-                                        {exercise.sets.map((set, index) => {
-                                            const isDisabled = restTimer !== null && restTimer > 0;
-
-                                            return (
-                                                <div key={set.id}
-                                                     className={`set-row ${set.completed ? 'completed' : ''} ${isDisabled ? 'disabled' : ''}`}>
-                                                    <div className="set-info">
-                                                        <span className="set-number">Підхід {index + 1}</span>
-                                                        <span className="set-target">{set.reps} повторень</span>
-                                                    </div>
-                                                    <button
-                                                        className={`check-btn ${set.completed ? 'checked' : ''}`}
-                                                        onClick={() => !isDisabled && toggleSetComplete(exercise.id, set.id)}
-                                                        disabled={isDisabled}
-                                                    >
-                                                        {set.completed ? '✓' : ''}
-                                                    </button>
-                                                </div>
-                                            );
-                                        })}
-                                    </div>
-                                )}
-                            </div>
-                        );
-                    })}
+                            );
+                        })
+                    )}
                 </section>
             </div>
         </div>
