@@ -4,6 +4,8 @@ CREATE TABLE nutrition_logs
 (
     id             UUID PRIMARY KEY         DEFAULT gen_random_uuid(),
     athlete_id     UUID  NOT NULL REFERENCES profiles (id) ON DELETE CASCADE,
+
+    meal_category  user_meal_type,
     meal_data      JSONB NOT NULL,
     total_calories FLOAT NOT NULL,
 
