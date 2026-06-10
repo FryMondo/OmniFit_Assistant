@@ -27,76 +27,97 @@ interface MemberItem {
     lastName: string;
     specialization?: string;
     status: 'pending' | 'active' | 'rejected';
+    userType: 'staff' | 'client';
 }
+
+const defaultSchedule: GymSchedule = {
+    monday: {isOpen: true, openTime: '08:00', closeTime: '22:00'},
+    tuesday: {isOpen: true, openTime: '08:00', closeTime: '22:00'},
+    wednesday: {isOpen: true, openTime: '08:00', closeTime: '22:00'},
+    thursday: {isOpen: true, openTime: '08:00', closeTime: '22:00'},
+    friday: {isOpen: true, openTime: '08:00', closeTime: '22:00'},
+    saturday: {isOpen: true, openTime: '09:00', closeTime: '20:00'},
+    sunday: {isOpen: false, openTime: '00:00', closeTime: '00:00'}
+};
+
+const dayLabels: Record<string, string> = {
+    monday: 'Понеділок', tuesday: 'Вівторок', wednesday: 'Середа',
+    thursday: 'Четвер', friday: 'П\'ятниця', saturday: 'Субота', sunday: 'Неділя'
+};
 
 const ManagerDashboard: React.FC = () => {
     const navigate = useNavigate();
-    const {user, session} = useAuth();
+    const {user, session, logout} = useAuth();
     const API_BASE_URL = import.meta.env.VITE_API_URL;
+
+    const [view, setView] = useState<'list' | 'details' | 'create'>('list');
+    const [myGyms, setMyGyms] = useState<any[]>([]);
+    const [selectedGymId, setSelectedGymId] = useState<string | null>(null);
 
     const [activeTab, setActiveTab] = useState<'main' | 'schedule' | 'equipment' | 'staff' | 'clients'>('main');
     const [isLoading, setIsLoading] = useState(true);
-    const [managedGymId, setManagedGymId] = useState<string | null>(null);
 
-    const [gymInfo, setGymInfo] = useState({
-        name: '', address: '', city: '', description: ''
-    });
-
-    const defaultSchedule: GymSchedule = {
-        monday: {isOpen: true, openTime: '08:00', closeTime: '22:00'},
-        tuesday: {isOpen: true, openTime: '08:00', closeTime: '22:00'},
-        wednesday: {isOpen: true, openTime: '08:00', closeTime: '22:00'},
-        thursday: {isOpen: true, openTime: '08:00', closeTime: '22:00'},
-        friday: {isOpen: true, openTime: '08:00', closeTime: '22:00'},
-        saturday: {isOpen: true, openTime: '09:00', closeTime: '20:00'},
-        sunday: {isOpen: false, openTime: '00:00', closeTime: '00:00'}
-    };
-
+    const [gymInfo, setGymInfo] = useState({name: '', address: '', city: '', description: ''});
     const [schedule, setSchedule] = useState<GymSchedule>(defaultSchedule);
-
-    const dayLabels: Record<string, string> = {
-        monday: 'Понеділок', tuesday: 'Вівторок', wednesday: 'Середа',
-        thursday: 'Четвер', friday: 'П\'ятниця', saturday: 'Субота', sunday: 'Неділя'
-    };
-
     const [equipment, setEquipment] = useState<EquipmentItem[]>([]);
-    const [newEqName, setNewEqName] = useState('');
-    const [newEqQty, setNewEqQty] = useState(1);
-
     const [trainers, setTrainers] = useState<MemberItem[]>([]);
     const [clients, setClients] = useState<MemberItem[]>([]);
+
+    const [newEqName, setNewEqName] = useState('');
+    const [newEqQty, setNewEqQty] = useState(1);
+    const [newGymData, setNewGymData] = useState({name: '', city: '', address: ''});
 
     useEffect(() => {
         if (!user || !session) return;
 
-        const fetchDashboardData = async () => {
+        const fetchMyGyms = async () => {
+            setIsLoading(true);
+            try {
+                const res = await fetch(`${API_BASE_URL}/gyms`, {
+                    headers: {'Authorization': `Bearer ${session.access_token}`}
+                });
+                if (res.ok) {
+                    const allGyms = await res.json();
+                    const managerGyms = allGyms.filter((g: any) => g.manager_id === user.id);
+                    setMyGyms(managerGyms);
+                }
+            } catch (error) {
+                console.error("Помилка завантаження залів:", error);
+            } finally {
+                setIsLoading(false);
+            }
+        };
+
+        if (view === 'list') {
+            fetchMyGyms();
+        }
+    }, [user, session, view, API_BASE_URL]);
+
+    useEffect(() => {
+        if (!selectedGymId || !session || view !== 'details') return;
+
+        const fetchGymDetails = async () => {
             setIsLoading(true);
             const headers = {'Authorization': `Bearer ${session.access_token}`};
 
             try {
-                const gymsRes = await fetch(`${API_BASE_URL}/gyms`, {headers});
-                if (!gymsRes.ok) throw new Error('Помилка завантаження залів');
-                const allGyms = await gymsRes.json();
-
-                const myGym = allGyms.find((g: any) => g.manager_id === user.id);
-                if (!myGym) {
-                    setIsLoading(false);
-                    return;
+                const gymRes = await fetch(`${API_BASE_URL}/gyms/${selectedGymId}`, {headers});
+                if (gymRes.ok) {
+                    const gymData = await gymRes.json();
+                    setGymInfo({
+                        name: gymData.name || '',
+                        city: gymData.address ? gymData.address.split(',')[0].trim() : '',
+                        address: gymData.address ? gymData.address.split(',').slice(1).join(',').trim() : '',
+                        description: gymData.description || ''
+                    });
+                    if (gymData.schedule && Object.keys(gymData.schedule).length > 0) {
+                        setSchedule({...defaultSchedule, ...gymData.schedule});
+                    } else {
+                        setSchedule(defaultSchedule);
+                    }
                 }
 
-                setManagedGymId(myGym.id);
-                setGymInfo({
-                    name: myGym.name || '',
-                    city: myGym.address ? myGym.address.split(',')[0].trim() : '',
-                    address: myGym.address ? myGym.address.split(',').slice(1).join(',').trim() : '',
-                    description: myGym.description || ''
-                });
-
-                if (myGym.schedule && Object.keys(myGym.schedule).length > 0) {
-                    setSchedule({...defaultSchedule, ...myGym.schedule});
-                }
-
-                const eqRes = await fetch(`${API_BASE_URL}/equipment/gym/${myGym.id}`, {headers});
+                const eqRes = await fetch(`${API_BASE_URL}/equipment/gym/${selectedGymId}`, {headers});
                 if (eqRes.ok) {
                     const eqData = await eqRes.json();
                     setEquipment(eqData.map((e: any) => ({
@@ -107,77 +128,88 @@ const ManagerDashboard: React.FC = () => {
                     })));
                 }
 
-                const membersRes = await fetch(`${API_BASE_URL}/memberships/gym/${myGym.id}`, {headers});
+                const membersRes = await fetch(`${API_BASE_URL}/memberships/gym/${selectedGymId}`, {headers});
                 if (membersRes.ok) {
                     const membersData = await membersRes.json();
 
-                    const mappedMembers: MemberItem[] = membersData.map((m: any) => ({
-                        id: m.id,
-                        userId: m.user_id,
-                        firstName: m.profiles?.first_name || 'Користувач',
-                        lastName: m.profiles?.last_name || '',
-                        specialization: m.profiles?.specialization || 'Тренер',
-                        status: m.status,
-                        userType: m.user_type
-                    }));
+                    const mappedMembers: MemberItem[] = await Promise.all(
+                        membersData.map(async (m: any) => {
+                            let firstName = m.profiles?.first_name || 'Користувач';
+                            let lastName = m.profiles?.last_name || '';
+                            let specialization = m.profiles?.specialization || (m.user_type === 'staff' ? 'Тренер' : '');
+
+                            if (!m.profiles && m.user_id) {
+                                try {
+                                    const profileRes = await fetch(`${API_BASE_URL}/profiles/${m.user_id}`, {headers});
+                                    if (profileRes.ok) {
+                                        const profileData = await profileRes.json();
+                                        firstName = profileData.first_name || firstName;
+                                        lastName = profileData.last_name || lastName;
+                                        specialization = profileData.specialization || specialization;
+                                    }
+                                } catch (e) {
+                                    console.error(`Не вдалося завантажити профіль для ${m.user_id}`, e);
+                                }
+                            }
+
+                            return {
+                                id: m.id,
+                                userId: m.user_id,
+                                firstName,
+                                lastName,
+                                specialization,
+                                status: m.status,
+                                userType: m.user_type
+                            };
+                        })
+                    );
 
                     setTrainers(mappedMembers.filter((m: any) => m.userType === 'staff'));
                     setClients(mappedMembers.filter((m: any) => m.userType === 'client'));
                 }
             } catch (error) {
-                console.error("Помилка завантаження Manager Dashboard:", error);
+                console.error("Помилка завантаження деталей залу:", error);
             } finally {
                 setIsLoading(false);
             }
         };
 
-        fetchDashboardData();
-    }, [user, session, API_BASE_URL]);
+        fetchGymDetails();
+    }, [selectedGymId, session, view, API_BASE_URL]);
 
     const activeTrainers = trainers.filter(t => t.status === 'active');
     const pendingStaffRequests = trainers.filter(t => t.status === 'pending');
-
     const activeClients = clients.filter(c => c.status === 'active');
     const pendingClientRequests = clients.filter(c => c.status === 'pending');
 
-    const handleUpdateMemberStatus = async (membershipId: string, newStatus: 'active' | 'rejected', isStaff: boolean) => {
-        if (!session) return;
+    const handleCreateGym = async (e: React.FormEvent) => {
+        e.preventDefault();
+        if (!user || !session) return;
+
         try {
-            const res = await fetch(`${API_BASE_URL}/memberships/${membershipId}/status`, {
-                method: 'PATCH',
+            const combinedAddress = `${newGymData.city}, ${newGymData.address}`;
+            const res = await fetch(`${API_BASE_URL}/gyms`, {
+                method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                     'Authorization': `Bearer ${session.access_token}`
                 },
-                body: JSON.stringify({status: newStatus})
+                body: JSON.stringify({
+                    manager_id: user.id,
+                    name: newGymData.name,
+                    address: combinedAddress,
+                    description: '',
+                    schedule: defaultSchedule
+                })
             });
 
             if (res.ok) {
-                const updater = (list: MemberItem[]) => list.map(m => m.id === membershipId ? {
-                    ...m,
-                    status: newStatus
-                } : m);
-                if (isStaff) setTrainers(updater(trainers));
-                else setClients(updater(clients));
+                const createdGym = await res.json();
+                setNewGymData({name: '', city: '', address: ''});
+                setSelectedGymId(createdGym.id);
+                setView('details');
             } else {
-                alert('Не вдалося оновити статус.');
-            }
-        } catch (error) {
-            console.error(error);
-        }
-    };
-
-    const handleDeleteMember = async (membershipId: string, isStaff: boolean) => {
-        if (!session || !window.confirm('Ви впевнені, що хочете видалити цього учасника із залу?')) return;
-        try {
-            const res = await fetch(`${API_BASE_URL}/memberships/${membershipId}`, {
-                method: 'DELETE',
-                headers: {'Authorization': `Bearer ${session.access_token}`}
-            });
-            if (res.ok) {
-                const filterer = (list: MemberItem[]) => list.filter(m => m.id !== membershipId);
-                if (isStaff) setTrainers(filterer(trainers));
-                else setClients(filterer(clients));
+                alert("Помилка створення залу");
             }
         } catch (error) {
             console.error(error);
@@ -186,10 +218,10 @@ const ManagerDashboard: React.FC = () => {
 
     const handleSaveMainInfo = async (e: React.FormEvent) => {
         e.preventDefault();
-        if (!managedGymId || !session) return;
+        if (!selectedGymId || !session) return;
         try {
             const combinedAddress = `${gymInfo.city}, ${gymInfo.address}`;
-            const res = await fetch(`${API_BASE_URL}/gyms/${managedGymId}`, {
+            const res = await fetch(`${API_BASE_URL}/gyms/${selectedGymId}`, {
                 method: 'PUT',
                 headers: {
                     'Content-Type': 'application/json',
@@ -209,9 +241,9 @@ const ManagerDashboard: React.FC = () => {
     };
 
     const handleSaveSchedule = async () => {
-        if (!managedGymId || !session) return;
+        if (!selectedGymId || !session) return;
         try {
-            const res = await fetch(`${API_BASE_URL}/gyms/${managedGymId}`, {
+            const res = await fetch(`${API_BASE_URL}/gyms/${selectedGymId}`, {
                 method: 'PUT',
                 headers: {
                     'Content-Type': 'application/json',
@@ -231,36 +263,57 @@ const ManagerDashboard: React.FC = () => {
 
     const handleAddEquipment = async (e: React.FormEvent) => {
         e.preventDefault();
-        if (!managedGymId || !session || !newEqName.trim()) return;
+        if (!selectedGymId || !session || !newEqName.trim()) return;
+
+        const eqNameTrimmed = newEqName.trim().toLowerCase();
+        const existingEq = equipment.find(eq => eq.name.toLowerCase() === eqNameTrimmed);
 
         try {
-            const res = await fetch(`${API_BASE_URL}/equipment`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${session.access_token}`
-                },
-                body: JSON.stringify({
-                    gym_id: managedGymId,
-                    equipment_name: newEqName,
-                    quantity: newEqQty,
-                    is_available: true
-                })
-            });
+            if (existingEq) {
+                const newQuantity = existingEq.quantity + newEqQty;
+                const res = await fetch(`${API_BASE_URL}/equipment/${existingEq.id}`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${session.access_token}`
+                    },
+                    body: JSON.stringify({quantity: newQuantity})
+                });
 
-            if (res.ok) {
-                const newEq = await res.json();
-                setEquipment([...equipment, {
-                    id: newEq.id,
-                    name: newEq.equipment_name,
-                    quantity: newEq.quantity,
-                    isAvailable: newEq.is_available
-                }]);
-                setNewEqName('');
-                setNewEqQty(1);
+                if (res.ok) {
+                    setEquipment(equipment.map(eq => eq.id === existingEq.id ? {...eq, quantity: newQuantity} : eq));
+                    setNewEqName('');
+                    setNewEqQty(1);
+                }
+            } else {
+                const res = await fetch(`${API_BASE_URL}/equipment`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${session.access_token}`
+                    },
+                    body: JSON.stringify({
+                        gym_id: selectedGymId,
+                        equipment_name: newEqName.trim(),
+                        quantity: newEqQty,
+                        is_available: true
+                    })
+                });
+
+                if (res.ok) {
+                    const newEq = await res.json();
+                    setEquipment([...equipment, {
+                        id: newEq.id,
+                        name: newEq.equipment_name,
+                        quantity: newEq.quantity,
+                        isAvailable: newEq.is_available
+                    }]);
+                    setNewEqName('');
+                    setNewEqQty(1);
+                }
             }
         } catch (error) {
-            console.error(error);
+            console.error("Помилка збереження інвентарю", error);
         }
     };
 
@@ -296,17 +349,117 @@ const ManagerDashboard: React.FC = () => {
         }
     };
 
-    if (isLoading) return <div className="loading-screen"
-                               style={{color: 'white', textAlign: 'center', marginTop: '50px'}}>Завантаження панелі
-        керування...</div>;
+    const handleUpdateMemberStatus = async (membershipId: string, newStatus: 'active' | 'rejected', isStaff: boolean) => {
+        if (!session) return;
+        try {
+            const res = await fetch(`${API_BASE_URL}/memberships/${membershipId}/status`, {
+                method: 'PATCH',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${session.access_token}`
+                },
+                body: JSON.stringify({status: newStatus})
+            });
 
-    if (!managedGymId) {
+            if (res.ok) {
+                const updater = (list: MemberItem[]) => list.map(m => m.id === membershipId ? {
+                    ...m,
+                    status: newStatus
+                } : m);
+                if (isStaff) setTrainers(updater(trainers));
+                else setClients(updater(clients));
+            }
+        } catch (error) {
+            console.error(error);
+        }
+    };
+
+    const handleDeleteMember = async (membershipId: string, isStaff: boolean) => {
+        if (!session || !window.confirm('Ви впевнені, що хочете видалити цього учасника із залу?')) return;
+        try {
+            const res = await fetch(`${API_BASE_URL}/memberships/${membershipId}`, {
+                method: 'DELETE',
+                headers: {'Authorization': `Bearer ${session.access_token}`}
+            });
+            if (res.ok) {
+                const filterer = (list: MemberItem[]) => list.filter(m => m.id !== membershipId);
+                if (isStaff) setTrainers(filterer(trainers));
+                else setClients(filterer(clients));
+            }
+        } catch (error) {
+            console.error(error);
+        }
+    };
+
+    const handleLogout = async () => {
+        await logout();
+        navigate('/auth');
+    };
+
+    if (isLoading) return <div className="loading-screen"
+                               style={{color: 'white', textAlign: 'center', marginTop: '50px'}}>Завантаження...</div>;
+
+    if (view === 'list') {
         return (
-            <div className="error-screen" style={{color: 'white', textAlign: 'center', marginTop: '50px'}}>
-                <h2>Доступ заборонено</h2>
-                <p>Ви не є менеджером жодного спортзалу.</p>
-                <button onClick={() => navigate(-1)} style={{marginTop: '20px', padding: '10px 20px'}}>Повернутися
-                </button>
+            <div className="manager-page">
+                <div className="manager-content">
+                    <header className="manager-header" style={{marginBottom: '20px'}}>
+                        <button className="back-btn logout-txt" onClick={handleLogout}
+                                style={{color: '#e74c3c'}}>Вийти
+                        </button>
+                        <h1>Мої спортзали</h1>
+                        <div className="header-spacer"></div>
+                    </header>
+
+                    <div className="gyms-list">
+                        {myGyms.map(gym => (
+                            <div key={gym.id} className="gym-card" onClick={() => {
+                                setSelectedGymId(gym.id);
+                                setView('details');
+                            }}>
+                                <h3 className="gym-name">{gym.name}</h3>
+                                <p className="address-text">{gym.address}</p>
+                            </div>
+                        ))}
+
+                        <button className="add-record-btn" onClick={() => setView('create')}
+                                style={{marginTop: '15px'}}>
+                            + Створити новий зал
+                        </button>
+                    </div>
+                </div>
+            </div>
+        );
+    }
+
+    if (view === 'create') {
+        return (
+            <div className="manager-page">
+                <div className="manager-content">
+                    <header className="manager-header">
+                        <button className="back-btn" onClick={() => setView('list')}>‹ Назад</button>
+                        <h1>Новий зал</h1>
+                        <div className="header-spacer"></div>
+                    </header>
+                    <form className="manager-form" onSubmit={handleCreateGym} style={{marginTop: '20px'}}>
+                        <div className="form-group"><label>Назва спортзалу</label>
+                            <input type="text" value={newGymData.name}
+                                   onChange={e => setNewGymData({...newGymData, name: e.target.value})} required/>
+                        </div>
+                        <div className="form-row">
+                            <div className="form-group"><label>Місто</label>
+                                <input type="text" value={newGymData.city}
+                                       onChange={e => setNewGymData({...newGymData, city: e.target.value})} required/>
+                            </div>
+                            <div className="form-group"><label>Адреса</label>
+                                <input type="text" value={newGymData.address}
+                                       onChange={e => setNewGymData({...newGymData, address: e.target.value})}
+                                       required/>
+                            </div>
+                        </div>
+                        <button type="submit" className="manager-submit-btn">Створити</button>
+                    </form>
+                </div>
             </div>
         );
     }
@@ -314,10 +467,9 @@ const ManagerDashboard: React.FC = () => {
     return (
         <div className="manager-page">
             <div className="manager-content">
-
                 <header className="manager-header">
-                    <button className="back-btn" onClick={() => navigate(-1)}>‹ Назад</button>
-                    <h1>Керування залом</h1>
+                    <button className="back-btn" onClick={() => setView('list')}>‹ До списку</button>
+                    <h1>{gymInfo.name || 'Керування залом'}</h1>
                     <div className="header-spacer"></div>
                 </header>
 
@@ -344,27 +496,24 @@ const ManagerDashboard: React.FC = () => {
                 </nav>
 
                 <main className="tab-viewport">
-
                     {activeTab === 'main' && (
                         <form className="manager-form" onSubmit={handleSaveMainInfo}>
                             <div className="form-group"><label>Назва спортзалу</label>
-                                <input type="text"
-                                       value={gymInfo.name}
-                                       onChange={e => setGymInfo({...gymInfo, name: e.target.value})} required/></div>
+                                <input type="text" value={gymInfo.name}
+                                       onChange={e => setGymInfo({...gymInfo, name: e.target.value})} required/>
+                            </div>
                             <div className="form-row">
                                 <div className="form-group"><label>Місто</label>
                                     <input type="text" value={gymInfo.city}
                                            onChange={e => setGymInfo({...gymInfo, city: e.target.value})} required/>
                                 </div>
                                 <div className="form-group"><label>Адреса</label>
-                                    <input type="text"
-                                           value={gymInfo.address}
+                                    <input type="text" value={gymInfo.address}
                                            onChange={e => setGymInfo({...gymInfo, address: e.target.value})} required/>
                                 </div>
                             </div>
                             <div className="form-group"><label>Повноцінний опис залу</label>
-                                <textarea rows={6}
-                                          value={gymInfo.description}
+                                <textarea rows={6} value={gymInfo.description}
                                           onChange={e => setGymInfo({...gymInfo, description: e.target.value})}
                                           required/>
                             </div>
@@ -454,7 +603,6 @@ const ManagerDashboard: React.FC = () => {
                                     )) : <p className="no-staff-text">Немає нових заявок.</p>}
                                 </div>
                             </div>
-
                             <div className="staff-section text-divider">
                                 <h3>Активні тренери залу</h3>
                                 <div className="staff-stack">
@@ -499,7 +647,6 @@ const ManagerDashboard: React.FC = () => {
                                     )) : <p className="no-staff-text">Немає нових заявок від клієнтів.</p>}
                                 </div>
                             </div>
-
                             <div className="staff-section text-divider">
                                 <h3>Активні клієнти залу</h3>
                                 <div className="staff-stack">
@@ -526,7 +673,6 @@ const ManagerDashboard: React.FC = () => {
                     )}
 
                 </main>
-
             </div>
         </div>
     );
