@@ -57,10 +57,14 @@ const Dashboard: React.FC = () => {
                 if (nutritionRes.ok) {
                     const logs = await nutritionRes.json();
 
-                    const today = new Date().toISOString().split('T')[0];
+                    const currentDate = new Date();
                     const todayLogs = logs.filter((log: any) => {
                         if (!log.logged_at) return false;
-                        return log.logged_at.startsWith(today);
+                        const logDate = new Date(log.logged_at);
+
+                        return logDate.getDate() === currentDate.getDate() &&
+                            logDate.getMonth() === currentDate.getMonth() &&
+                            logDate.getFullYear() === currentDate.getFullYear();
                     });
 
                     const totalToday = todayLogs.reduce((sum: number, log: any) => sum + (log.total_calories || 0), 0);

@@ -37,6 +37,8 @@
     display: flex;
     align-items: center;
     justify-content: center;
+    color: #aaa;
+    font-size: 16px;
 }
 
 .icon-btn img {
@@ -373,4 +375,132 @@
     100% {
         box-shadow: 0 0 0 0 rgba(39, 174, 96, 0);
     }
+}
+
+.date-navigation h1 {
+    text-transform: capitalize;
+}
+
+.capsule-actions {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.capsule-submit-btn {
+    background: none;
+    border: none;
+    font-size: 20px;
+    padding: 0 5px;
+    transition: color 0.2s;
+}
+
+.capsule-submit-btn.active {
+    color: #27ae60;
+    cursor: pointer;
+}
+
+.capsule-submit-btn.disabled {
+    color: #555;
+    cursor: default;
+}
+
+.meal-card {
+    cursor: pointer;
+    flex-direction: column;
+    align-items: stretch;
+}
+
+.meal-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+}
+
+.meal-info {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.meal-category-badge {
+    font-size: 11px;
+    color: #aaa;
+    background-color: #1a1a1a;
+    padding: 2px 6px;
+    border-radius: 4px;
+    width: fit-content;
+}
+
+.meal-actions {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.meal-cal {
+    font-weight: bold;
+}
+
+.delete-meal-btn {
+    background: none;
+    border: none;
+    color: #e74c3c;
+    font-size: 18px;
+    cursor: pointer;
+    transition: transform 0.2s;
+}
+
+.delete-meal-btn:hover {
+    transform: scale(1.2);
+}
+
+.meal-macros-details {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 12px;
+    padding-top: 12px;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    font-size: 13px;
+    color: #aaa;
+}
+
+.meal-macros-details strong {
+    color: #fff;
+    font-weight: normal;
+}
+
+.pagination {
+    display: flex;
+    justify-content: center;
+    gap: 8px;
+    margin-top: 15px;
+}
+
+.page-btn {
+    background: #1a1a1a;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    color: #aaa;
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.page-btn:hover:not(:disabled) {
+    border-color: rgba(255, 255, 255, 0.3);
+}
+
+.page-btn:disabled {
+    cursor: not-allowed;
+    opacity: 0.5;
+}
+
+.page-btn.active {
+    background: rgba(39, 174, 96, 0.2);
+    border-color: #27ae60;
+    color: #27ae60;
+    font-weight: bold;
 }

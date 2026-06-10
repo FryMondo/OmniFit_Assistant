@@ -154,7 +154,7 @@ const MyMeals: React.FC = () => {
                 },
                 body: JSON.stringify({
                     athlete_id: user.id,
-                    meal_category: 'Snack',
+                    meal_category: 'snack',
                     items: [{
                         original_name: meal.name,
                         amount: 1,
