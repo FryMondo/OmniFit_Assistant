@@ -17,6 +17,11 @@ interface ConnectionRequest {
     status: 'pending' | 'active' | 'rejected';
 }
 
+interface GymInfo {
+    id: string;
+    name: string;
+}
+
 const Profile: React.FC = () => {
     const navigate = useNavigate();
     const {user, session} = useAuth();
@@ -33,6 +38,7 @@ const Profile: React.FC = () => {
         weight: 0,
         height: 0,
         experienceLevel: 'beginner',
+        goal: 'muscle_gain',
         injuries: ''
     });
 
@@ -43,6 +49,7 @@ const Profile: React.FC = () => {
     const [searchError, setSearchError] = useState('');
     const [activeConnections, setActiveConnections] = useState<ConnectionRequest[]>([]);
     const [pendingRequests, setPendingRequests] = useState<ConnectionRequest[]>([]);
+    const [myGyms, setMyGyms] = useState<GymInfo[]>([]);
 
     useEffect(() => {
         if (!user || !session) return;
@@ -60,44 +67,97 @@ const Profile: React.FC = () => {
                 }
 
                 const metricsRes = await fetch(`${API_BASE_URL}/metrics/${user.id}`, {headers});
+                let metrics: any = {};
                 if (metricsRes.ok) {
-                    const metrics = await metricsRes.json();
-                    setEditForm({
-                        firstName: fetchedProfile?.first_name || user.firstName || '',
-                        lastName: fetchedProfile?.last_name || user.lastName || '',
-                        gender: metrics.gender || 'male',
-                        dob: metrics.date_of_birth || '',
-                        weight: metrics.weight_kg || 0,
-                        height: metrics.height_cm || 0,
-                        experienceLevel: metrics.experience_level || 'beginner',
-                        injuries: (metrics.injuries && metrics.injuries.length > 0) ? metrics.injuries[0] : ''
-                    });
+                    metrics = await metricsRes.json();
                 }
 
-                const roleEndpoint = user.role === 'coach' ? `coach/${user.id}` : `athlete/${user.id}`;
-                const relationsRes = await fetch(`${API_BASE_URL}/relations/${roleEndpoint}`, {headers});
+                setEditForm({
+                    firstName: fetchedProfile?.first_name || user.firstName || '',
+                    lastName: fetchedProfile?.last_name || user.lastName || '',
+                    gender: metrics.gender || 'male',
+                    dob: metrics.date_of_birth || '',
+                    weight: metrics.weight_kg || 0,
+                    height: metrics.height_cm || 0,
+                    experienceLevel: metrics.experience_level || 'beginner',
+                    goal: metrics.goal || 'muscle_gain',
+                    injuries: (metrics.injuries && metrics.injuries.length > 0) ? metrics.injuries[0] : ''
+                });
 
-                if (relationsRes.ok) {
-                    const relationsData = await relationsRes.json();
+                if (user.role !== 'manager') {
+                    const roleEndpoint = user.role === 'coach' ? `coach/${user.id}` : `athlete/${user.id}`;
+                    const relationsRes = await fetch(`${API_BASE_URL}/relations/${roleEndpoint}`, {headers});
 
-                    const formattedRelations: ConnectionRequest[] = relationsData.map((rel: any) => {
-                        const target = user.role === 'athlete' ? rel.coach : rel.athlete;
-                        return {
-                            id: rel.id,
-                            status: rel.status,
-                            targetUser: {
-                                id: target?.id || '',
-                                username: target?.username || 'Користувач',
-                                first_name: target?.first_name || 'Ім\'я',
-                                last_name: target?.last_name || 'Невідомо',
-                                role: target?.role || (user.role === 'athlete' ? 'coach' : 'athlete')
+                    if (relationsRes.ok) {
+                        const relationsData = await relationsRes.json();
+
+                        const formattedRelations: ConnectionRequest[] = await Promise.all(
+                            relationsData.map(async (rel: any) => {
+                                const target = user.role === 'athlete' ? rel.coach : rel.athlete;
+                                const targetId = target?.id || (user.role === 'athlete' ? rel.coach_id : rel.athlete_id);
+
+                                let fName = target?.first_name || target?.profiles?.first_name || 'Ім\'я';
+                                let lName = target?.last_name || target?.profiles?.last_name || 'Невідомо';
+                                let uname = target?.username || 'user';
+                                let urole = target?.role || (user.role === 'athlete' ? 'coach' : 'athlete');
+
+                                if ((fName === 'Ім\'я' || lName === 'Невідомо') && targetId) {
+                                    try {
+                                        const profRes = await fetch(`${API_BASE_URL}/profiles/${targetId}`, {headers});
+                                        if (profRes.ok) {
+                                            const pData = await profRes.json();
+                                            fName = pData.first_name || fName;
+                                            lName = pData.last_name || lName;
+                                            uname = pData.username || uname;
+                                            urole = pData.role || urole;
+                                        }
+                                    } catch (e) {
+                                        console.error('Не вдалося завантажити профіль', e);
+                                    }
+                                }
+
+                                return {
+                                    id: rel.id,
+                                    status: rel.status,
+                                    targetUser: {
+                                        id: targetId,
+                                        username: uname,
+                                        first_name: fName,
+                                        last_name: lName,
+                                        role: urole
+                                    }
+                                };
+                            })
+                        );
+
+                        setActiveConnections(formattedRelations.filter(r => r.status === 'active'));
+                        setPendingRequests(formattedRelations.filter(r => r.status === 'pending'));
+                    }
+                }
+
+                const membershipsRes = await fetch(`${API_BASE_URL}/memberships/user/${user.id}`, {headers});
+                if (membershipsRes.ok) {
+                    const membershipsData = await membershipsRes.json();
+                    const activeMemberships = membershipsData.filter((m: any) => m.status === 'active');
+
+                    const gymsList = await Promise.all(activeMemberships.map(async (m: any) => {
+                        if (m.gyms) return {id: m.gym_id, name: m.gyms.name};
+
+                        try {
+                            const gRes = await fetch(`${API_BASE_URL}/gyms/${m.gym_id}`, {headers});
+                            if (gRes.ok) {
+                                const gData = await gRes.json();
+                                return {id: m.gym_id, name: gData.name};
                             }
-                        };
-                    });
+                        } catch (e) {
+                            console.error(e);
+                        }
 
-                    setActiveConnections(formattedRelations.filter(r => r.status === 'active'));
-                    setPendingRequests(formattedRelations.filter(r => r.status === 'pending'));
+                        return {id: m.gym_id, name: 'Спортзал'};
+                    }));
+                    setMyGyms(gymsList);
                 }
+
             } catch (error) {
                 console.error("Помилка завантаження профілю:", error);
             } finally {
@@ -107,7 +167,6 @@ const Profile: React.FC = () => {
 
         fetchAllData();
     }, [user, session, API_BASE_URL]);
-
 
     const handleSave = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -137,6 +196,7 @@ const Profile: React.FC = () => {
                     weight_kg: editForm.weight,
                     height_cm: editForm.height,
                     experience_level: editForm.experienceLevel,
+                    goal: editForm.goal,
                     injuries: editForm.injuries ? [editForm.injuries] : []
                 })
             });
@@ -159,7 +219,7 @@ const Profile: React.FC = () => {
 
     const handleExactSearch = async (e: React.FormEvent) => {
         e.preventDefault();
-        if (!session) return;
+        if (!session || !user) return;
 
         setSearchError('');
         setSearchResult(null);
@@ -179,6 +239,17 @@ const Profile: React.FC = () => {
 
             if (res.ok) {
                 const foundUser = await res.json();
+
+                if (foundUser.role === 'manager') {
+                    setSearchError('Менеджерів залів не можна додавати у зв\'язки.');
+                    return;
+                }
+                if (foundUser.role === user.role) {
+                    const targetRoleStr = user.role === 'athlete' ? 'тренерів' : 'клієнтів';
+                    setSearchError(`У системі ви можете шукати лише ${targetRoleStr}.`);
+                    return;
+                }
+
                 setSearchResult(foundUser);
             } else {
                 setSearchError('Користувача з таким @username не знайдено.');
@@ -232,16 +303,17 @@ const Profile: React.FC = () => {
         }
     };
 
-    const handleCancelRequest = async (id: string) => {
-        if (!session) return;
+    const handleRemoveConnection = async (id: string) => {
+        if (!session || !window.confirm('Ви впевнені, що хочете видалити цей зв\'язок?')) return;
         try {
             await fetch(`${API_BASE_URL}/relations/${id}`, {
                 method: 'DELETE',
                 headers: {'Authorization': `Bearer ${session.access_token}`}
             });
-            setPendingRequests(pendingRequests.filter(req => req.id !== id));
+            setPendingRequests(prev => prev.filter(req => req.id !== id));
+            setActiveConnections(prev => prev.filter(conn => conn.id !== id));
         } catch (error) {
-            alert("Помилка при скасуванні заявки.");
+            alert("Помилка при видаленні зв'язку.");
         }
     };
 
@@ -326,6 +398,14 @@ const Profile: React.FC = () => {
                                         editForm.experienceLevel === 'intermediate' ? 'Середній (Любитель)' : 'Досвідчений (Профі)'}
                                 </span>
                             </div>
+                            <div className="detail-row">
+                                <span className="detail-title">Головна ціль</span>
+                                <span className="detail-value">
+                                    {editForm.goal === 'weight_loss' ? 'Схуднення' :
+                                        editForm.goal === 'muscle_gain' ? 'Набір маси' :
+                                            editForm.goal === 'strength' ? 'Розвиток сили' : 'Розвиток витривалості'}
+                                </span>
+                            </div>
                             <div className="detail-row injuries-row">
                                 <span className="detail-title">Травми та обмеження</span>
                                 <div className="injuries-box">
@@ -375,6 +455,28 @@ const Profile: React.FC = () => {
                             )}
                         </div>
 
+                        <div className="network-section">
+                            <h3>Мої спортзали</h3>
+                            <div className="connections-list">
+                                {myGyms.length > 0 ? (
+                                    myGyms.map(gym => (
+                                        <div key={gym.id} className="connection-card active-conn">
+                                            <div className="conn-info">
+                                                <span className="conn-name">{gym.name}</span>
+                                                <span className="conn-role">Спортзал</span>
+                                            </div>
+                                            <button className="go-to-plan-btn"
+                                                    onClick={() => navigate(`/gyms/${gym.id}`)}>
+                                                Деталі
+                                            </button>
+                                        </div>
+                                    ))
+                                ) : (
+                                    <p className="no-connections-text">Ви не приєднані до жодного залу.</p>
+                                )}
+                            </div>
+                        </div>
+
                         {pendingRequests.length > 0 && (
                             <div className="network-section">
                                 <h3>Відправлені заявки</h3>
@@ -387,7 +489,7 @@ const Profile: React.FC = () => {
                                                 <span className="conn-status">В очікуванні</span>
                                             </div>
                                             <button className="cancel-req-btn"
-                                                    onClick={() => handleCancelRequest(req.id)}>Скасувати
+                                                    onClick={() => handleRemoveConnection(req.id)}>Скасувати
                                             </button>
                                         </div>
                                     ))}
@@ -407,8 +509,12 @@ const Profile: React.FC = () => {
                                                 <span
                                                     className="conn-role">{conn.targetUser.role === 'coach' ? 'Мій тренер' : 'Мій клієнт'}</span>
                                             </div>
-                                            <button className="go-to-plan-btn"
-                                                    onClick={() => navigate(`/my-plan/${conn.targetUser.id}`)}>Профіль
+                                            <button
+                                                className="cancel-req-btn"
+                                                onClick={() => handleRemoveConnection(conn.id)}
+                                                style={{color: '#e74c3c', borderColor: 'rgba(231, 76, 60, 0.3)'}}
+                                            >
+                                                Видалити
                                             </button>
                                         </div>
                                     ))
@@ -417,6 +523,7 @@ const Profile: React.FC = () => {
                                 )}
                             </div>
                         </div>
+
                     </div>
                 )}
 
@@ -473,6 +580,17 @@ const Profile: React.FC = () => {
                                 <option value="beginner">Новачок</option>
                                 <option value="intermediate">Середній (Любитель)</option>
                                 <option value="advanced">Досвідчений (Профі)</option>
+                            </select>
+                        </div>
+
+                        <div className="input-group">
+                            <label>Головна ціль</label>
+                            <select value={editForm.goal}
+                                    onChange={e => setEditForm({...editForm, goal: e.target.value})}>
+                                <option value="muscle_gain">Набір маси</option>
+                                <option value="weight_loss">Схуднення</option>
+                                <option value="strength">Розвиток сили</option>
+                                <option value="endurance">Розвиток витривалості</option>
                             </select>
                         </div>
 

@@ -89,11 +89,32 @@ const GymDetails: React.FC = () => {
                 if (membersRes.ok) {
                     const members = await membersRes.json();
                     const staff = members.filter((m: any) => m.user_type === 'staff' && m.status === 'active');
-                    trainersList = staff.map((s: any) => ({
-                        id: s.user_id,
-                        name: s.profiles ? `${s.profiles.first_name} ${s.profiles.last_name}` : 'Тренер залу',
-                        specialization: s.profiles?.specialization || 'Фітнес інструктор'
-                    }));
+
+                    trainersList = await Promise.all(
+                        staff.map(async (s: any) => {
+                            let name = s.profiles ? `${s.profiles.first_name} ${s.profiles.last_name}` : 'Тренер залу';
+                            let specialization = s.profiles?.specialization || 'Фітнес інструктор';
+
+                            if (!s.profiles && s.user_id) {
+                                try {
+                                    const profileRes = await fetch(`${API_BASE_URL}/profiles/${s.user_id}`, {headers});
+                                    if (profileRes.ok) {
+                                        const profileData = await profileRes.json();
+                                        name = `${profileData.first_name} ${profileData.last_name}`;
+                                        specialization = profileData.specialization || specialization;
+                                    }
+                                } catch (e) {
+                                    console.error(`Не вдалося завантажити профіль тренера ${s.user_id}`, e);
+                                }
+                            }
+
+                            return {
+                                id: s.user_id,
+                                name,
+                                specialization
+                            };
+                        })
+                    );
                 }
 
                 const userGymsRes = await fetch(`${API_BASE_URL}/memberships/user/${user.id}`, {headers});
@@ -105,7 +126,7 @@ const GymDetails: React.FC = () => {
                     }
                 }
 
-                const reviewRes = await fetch(`${API_BASE_URL}/reviews/check/${id}/${user.id}`, {headers});
+                const reviewRes = await fetch(`${API_BASE_URL}/gym-reviews/check/${id}/${user.id}`, {headers});
                 if (reviewRes.ok) {
                     const reviewData = await reviewRes.json();
                     if (reviewData.hasVoted) {
@@ -156,7 +177,7 @@ const GymDetails: React.FC = () => {
         if (hasVoted || !user || !session) return;
 
         try {
-            const res = await fetch(`${API_BASE_URL}/reviews`, {
+            const res = await fetch(`${API_BASE_URL}/gym-reviews`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',

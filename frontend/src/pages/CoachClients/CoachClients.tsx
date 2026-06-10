@@ -11,6 +11,21 @@ interface Client {
     goal?: string;
 }
 
+const translateGoal = (goalKey?: string) => {
+    switch (goalKey) {
+        case 'weight_loss':
+            return 'Схуднення';
+        case 'muscle_gain':
+            return 'Набір маси';
+        case 'strength':
+            return 'Розвиток сили';
+        case 'endurance':
+            return 'Розвиток витривалості';
+        default:
+            return 'Ціль не вказана';
+    }
+};
+
 const CoachClients: React.FC = () => {
     const navigate = useNavigate();
     const {user, session} = useAuth();
@@ -28,20 +43,53 @@ const CoachClients: React.FC = () => {
         const fetchClients = async () => {
             setIsLoading(true);
             try {
-                const res = await fetch(`${API_BASE_URL}/relations/coach/${user.id}`, {
-                    headers: {'Authorization': `Bearer ${session.access_token}`}
-                });
+                const headers = {'Authorization': `Bearer ${session.access_token}`};
+                const res = await fetch(`${API_BASE_URL}/relations/coach/${user.id}`, {headers});
 
                 if (res.ok) {
                     const relations = await res.json();
 
-                    const formattedClients: Client[] = relations.map((rel: any) => ({
-                        relationId: rel.id,
-                        athleteId: rel.athlete?.id || rel.athlete_id,
-                        firstName: rel.athlete?.first_name || rel.athlete?.profiles?.first_name || 'Ім\'я',
-                        lastName: rel.athlete?.last_name || rel.athlete?.profiles?.last_name || 'Невідомо',
-                        goal: 'Покращення форми'
-                    }));
+                    const formattedClients: Client[] = await Promise.all(
+                        relations.map(async (rel: any) => {
+                            let firstName = rel.athlete?.first_name || rel.athlete?.profiles?.first_name || 'Ім\'я';
+                            let lastName = rel.athlete?.last_name || rel.athlete?.profiles?.last_name || 'Невідомо';
+                            const athleteId = rel.athlete?.id || rel.athlete_id;
+                            let clientGoal = 'Ціль не вказана';
+
+                            if (athleteId) {
+                                if (firstName === 'Ім\'я' || lastName === 'Невідомо') {
+                                    try {
+                                        const profileRes = await fetch(`${API_BASE_URL}/profiles/${athleteId}`, {headers});
+                                        if (profileRes.ok) {
+                                            const profileData = await profileRes.json();
+                                            firstName = profileData.first_name || firstName;
+                                            lastName = profileData.last_name || lastName;
+                                        }
+                                    } catch (e) {
+                                        console.error(`Не вдалося завантажити профіль для ${athleteId}`, e);
+                                    }
+                                }
+
+                                try {
+                                    const metricsRes = await fetch(`${API_BASE_URL}/metrics/${athleteId}`, {headers});
+                                    if (metricsRes.ok) {
+                                        const metricsData = await metricsRes.json();
+                                        clientGoal = translateGoal(metricsData.goal);
+                                    }
+                                } catch (e) {
+                                    console.error(`Не вдалося завантажити метрики для ${athleteId}`, e);
+                                }
+                            }
+
+                            return {
+                                relationId: rel.id,
+                                athleteId,
+                                firstName,
+                                lastName,
+                                goal: clientGoal
+                            };
+                        })
+                    );
 
                     setActiveClients(formattedClients.filter((_, index: number) => relations[index].status === 'active'));
                     setPendingRequests(formattedClients.filter((_, index: number) => relations[index].status === 'pending'));
