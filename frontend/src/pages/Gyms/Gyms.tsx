@@ -60,7 +60,7 @@ const Gyms: React.FC = () => {
         const fetchGyms = async () => {
             setIsLoading(true);
             try {
-                const headers = session ? {'Authorization': `Bearer ${session.access_token}`} : {};
+                const headers: Record<string, string> = session ? {'Authorization': `Bearer ${session.access_token}`} : {};
 
                 const res = await fetch(`${API_BASE_URL}/gyms`, {headers});
 
