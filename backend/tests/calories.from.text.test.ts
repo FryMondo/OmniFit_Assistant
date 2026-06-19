@@ -1,8 +1,10 @@
 import {calculateCaloriesFromText} from "../src/services/nutrition.service";
 
 describe("Nutrition Service - calculateCaloriesFromText", () => {
+    const userId = "e3a67a44-1b5f-4653-9eab-3285c25a1228";
+
     it("1. Чітке введення продукту: '100 грам хліба'", async () => {
-        const result = await calculateCaloriesFromText("100 грам хліба");
+        const result = await calculateCaloriesFromText("100 грам хліба", userId);
 
         expect(result.items.length).toBe(1);
         expect(result.items[0].original_name).toMatch(/bread/i);
@@ -22,7 +24,7 @@ describe("Nutrition Service - calculateCaloriesFromText", () => {
     });
 
     it("2. Чітке введення продукту іноземною мовою: '135 grams of spaghetti'", async () => {
-        const result = await calculateCaloriesFromText("135 grams of spaghetti");
+        const result = await calculateCaloriesFromText("135 grams of spaghetti", userId);
 
         expect(result.items.length).toBe(1);
         expect(result.items[0].original_name).toMatch(/spaghetti/i);
@@ -42,7 +44,7 @@ describe("Nutrition Service - calculateCaloriesFromText", () => {
     });
 
     it("3. Чітке введення декількох продуктів: '200 грам курки та 450 грам гречки'", async () => {
-        const result = await calculateCaloriesFromText("200 грам курки та 450 грам гречки");
+        const result = await calculateCaloriesFromText("200 грам курки та 450 грам гречки", userId);
 
         expect(result.items.length).toBe(2);
         expect(result.items[0].original_name).toMatch(/chicken/i);
@@ -70,7 +72,7 @@ describe("Nutrition Service - calculateCaloriesFromText", () => {
     });
 
     it("4. Чітке введення декількох продуктів з умовною кількістю: '2 cinnamon rolls and 1 coffee'", async () => {
-        const result = await calculateCaloriesFromText("2 cinnamon rolls and 1 coffee");
+        const result = await calculateCaloriesFromText("2 cinnamon rolls and 1 coffee", userId);
 
         expect(result.items.length).toBe(2);
         expect(result.items[0].original_name).toMatch(/cinnamon roll/i);
@@ -98,7 +100,7 @@ describe("Nutrition Service - calculateCaloriesFromText", () => {
     });
 
     it("5. Довге введення з математикою: 'Я з'їв 150 грамів вареної курки, зварив десь двісті грамів рису і з'їв половину'", async () => {
-        const result = await calculateCaloriesFromText("Я з'їв 150 грамів вареної курки, зварив десь двісті грамів рису і з'їв половину");
+        const result = await calculateCaloriesFromText("Я з'їв 150 грамів вареної курки, зварив десь двісті грамів сухого рису і з'їв половину", userId);
 
         expect(result.items.length).toBe(2);
         expect(result.items[0].original_name).toMatch(/chicken/i);
@@ -126,7 +128,7 @@ describe("Nutrition Service - calculateCaloriesFromText", () => {
     });
 
     it("6. Неправильне введення (Абсурдний текст): 'MI BOMBO!!!'", async () => {
-        const result = await calculateCaloriesFromText("MI BOMBO!!!");
+        const result = await calculateCaloriesFromText("MI BOMBO!!!", userId);
 
         expect(result.items.length).toBe(0);
 
@@ -139,7 +141,7 @@ describe("Nutrition Service - calculateCaloriesFromText", () => {
     });
 
     it("7. Питання: 'Скільки калорій в свинині?'", async () => {
-        const result = await calculateCaloriesFromText("Скільки калорій в свинині?");
+        const result = await calculateCaloriesFromText("Скільки калорій в свинині?", userId);
 
         expect(result.items.length).toBe(1);
         expect(result.items[0].original_name).toMatch(/pork/i);
@@ -159,7 +161,7 @@ describe("Nutrition Service - calculateCaloriesFromText", () => {
     });
 
     it("8. Продукт із смаком: 'Маленька пачка чипсів зі смаком краб'", async () => {
-        const result = await calculateCaloriesFromText("Маленька пачка чипсів зі смаком краб");
+        const result = await calculateCaloriesFromText("Маленька пачка чипсів зі смаком краб", userId);
 
         expect(result.items.length).toBe(1);
         expect(result.items[0].original_name).toMatch(/potato chips/i);
@@ -179,7 +181,7 @@ describe("Nutrition Service - calculateCaloriesFromText", () => {
     });
 
     it("9. Екзотичні страви: '700 грамів борщу з буряка'", async () => {
-        const result = await calculateCaloriesFromText("700 грамів борщу з буряка");
+        const result = await calculateCaloriesFromText("700 грамів борщу з буряка", userId);
 
         expect(result.items.length).toBe(1);
         expect(result.items[0].original_name).toMatch(/borscht/i);
@@ -199,7 +201,7 @@ describe("Nutrition Service - calculateCaloriesFromText", () => {
     });
 
     it("10. Введення напоїв: 'Літра Кока-Коли'", async () => {
-        const result = await calculateCaloriesFromText("Літра Кока-Коли");
+        const result = await calculateCaloriesFromText("Літра Кока-Коли", userId);
 
         expect(result.items.length).toBe(1);
         expect(result.items[0].original_name).toMatch(/cola/i);
