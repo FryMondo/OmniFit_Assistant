@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "test": "jest",
-    "build": "tsc",
+    "build": "tsc && cp -r src/prompts dist/",
     "start": "node dist/server.js"
   },
   "keywords": [],
