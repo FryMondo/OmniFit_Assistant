@@ -36,6 +36,6 @@ app.use('/api/memberships', membershipRoutes);
 app.use('/api/custom-meals', customMealRoutes);
 app.use('/api/exercise-logs', exerciseLogRotes);
 
-app.listen(PORT, () => {
+app.listen(PORT, "0.0.0.0", () => {
     console.log(`Сервер запущено на http://localhost:${PORT}`);
 });
